@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">AndroidFileVault</string>
+    <string name="vault_1_button">Open Vault</string>
+    <string name="vault_2_button">Vault 2</string>
+    <string name="vault_3_button">Vault 3</string>
+    <string name="vault_4_button">Vault 4</string>
+    <string name="export_selected_file">Export Selected Files</string>
+    <string name="share_file">Share Files</string>
+    <string name="export_all_files">Export All Files</string>
+    <string name="share_all_files">Share All Files</string>
+    <string name="latest">Latest</string>
+    <string name="star">Star</string>
+    <string name="login">Login</string>
+    <string name="password_hint">Please Enter Your Code</string>
+</resources>

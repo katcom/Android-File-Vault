@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_export_selected_files"
+        android:title="@string/export_selected_file"/>
+    <item android:id="@+id/menu_share_selected_files"
+        android:title="@string/share_file"/>
+    <item android:id="@+id/menu_export_all_files"
+        android:title="@string/export_all_files"/>
+    <item android:id="@+id/menu_share_all_files"
+        android:title="@string/share_all_files"/>
+    <item android:id="@+id/menu_latest"
+        android:title="@string/latest"/>
+    <item android:id="@+id/menu_star"
+        android:title="@string/star"/>
+</menu>

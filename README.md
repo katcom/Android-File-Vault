@@ -14,3 +14,28 @@ It is an application that help users hides files on android devices.
 
 Finally, open the Android Studio, click *Open an exisiting Android Studio Project* and choose the project folder.
 
+### When you are done
+1. Open terminal and go to the project's directory, 
+1. Add changed files to cache area `git add . `
+1. Commit your changes `git commit -m "add some comment here"`
+1. Push your code to the **dev** branch of the repository on Github `git push origin dev`
+1. Done and enjoy
+
+Noted in this stage of development, please only commit your code to the **dev** branch.
+
+## Things to do
+These are tasks we aim to complete in this course.
+- [ ] Display Files with content
+- [ ] Login verification
+- [ ] Import Files
+- [ ] Export Files
+- [ ] Encrypt Files
+- [ ] Decrypt Files
+- [ ] Import & Encrypt Files
+- [ ] Export & Decrypt Files
+- [ ] Share Encrypt Compressed Files
+- [ ] Open Files with Three Party Apps
+- [ ] Take Photo inside the Vault
+- [ ] Record Audio inside the Vault
+- [ ] Unit Testing of all Modules.
+

@@ -11,5 +11,4 @@ It is an application that help users hides files on android devices.
 ```shell
  git clone https://github.com/katcom/Android-File-Vault.git
 ```
-1.
-Open the #Android Studio#, click *Open an exisiting Android Studio Project* and choose the project folder.
+1. Open the #Android Studio#, click *Open an exisiting Android Studio Project* and choose the project folder.

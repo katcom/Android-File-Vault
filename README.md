@@ -25,6 +25,7 @@ Noted in this stage of development, please only commit your code to the **dev** 
 
 ## Things to do
 These are tasks we aim to complete in this course.
+- [ ] Understand the code written by Ludwig
 - [ ] Display Files with content
 - [ ] Login verification
 - [ ] Import Files

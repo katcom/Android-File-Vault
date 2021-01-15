@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class FileVault {
-    private static String vaultDirectory = "FileVaultOne";
+    public static String sVaultDirectory = "FileVaultOne";
     private static FileVault sVault;
     private List<ProtectedFile> mFiles;
     private FileVault(Context context){
         // Singleton
         File directory = context.getFilesDir();
-        File vaultFolder = new File(directory, vaultDirectory);
+        File vaultFolder = new File(directory, sVaultDirectory);
 
         String[] files = vaultFolder.list();
 
@@ -46,6 +46,6 @@ public class FileVault {
     }
 
     public String getVaultDirectory(){
-        return vaultDirectory;
+        return sVaultDirectory;
     }
 }

@@ -17,13 +17,14 @@ public class Utils {
     public static void copyFilesFromAsset(Context context,String source,String target){
         AssetManager assets = context.getAssets();
         String[] files = null;
-        target = "/" + target + "/";
+        target = context.getFilesDir()+"/"+target;
 
         try{
             files = assets.list(source);
         }catch (IOException ioe){
             Log.e(TAG,"Could not list assets",ioe);
         }
+
         if(files != null){
             InputStream in = null;
             OutputStream out  = null;
@@ -31,10 +32,10 @@ public class Utils {
             for(String filename :files){
                 try{
                     String assetPath = source + "/"+ filename;
-                    String targetPath = "/" + target + "/" + filename;
+                    String targetPath = target + "/" + filename;
 
                     in = assets.open(assetPath);
-                    File file = new File(context.getFilesDir()+targetPath);
+                    File file = new File(targetPath);
 
                     if(file.exists()){
                        continue;

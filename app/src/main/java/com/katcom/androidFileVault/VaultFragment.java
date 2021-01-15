@@ -1,7 +1,6 @@
 package com.katcom.androidFileVault;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -14,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -49,15 +49,19 @@ public class VaultFragment extends Fragment {
         mFileRecyclerView = view.findViewById(R.id.vault_file_recycler_view);
         mFileRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mVault = FileVault.get(getActivity());
-        File file = new File(this.getContext().getFilesDir() + "/" + mVault.getVaultDirectory());
+        copySampleFiles();
+
+        mVault = FileVault.get(this.getContext());
+        updateUI();
+        return view;
+    }
+
+    private void copySampleFiles() {
+        File file = new File(this.getContext().getFilesDir() + "/" + FileVault.sVaultDirectory);
         if(!file.exists()){
             file.mkdir();
         }
-        Utils.copyFilesFromAsset(this.getContext(),"sample_files","FileVaultOne");
-
-        updateUI();
-        return view;
+        Utils.copyFilesFromAsset(this.getContext(),"sample_files",FileVault.sVaultDirectory);
     }
 
     private void updateUI() {
@@ -83,14 +87,15 @@ public class VaultFragment extends Fragment {
 
     private class FileHolder extends RecyclerView.ViewHolder{
         public TextView mFileTextView;
-
         public FileHolder(@NonNull View itemView) {
             super(itemView);
-            mFileTextView = (TextView) itemView;
+            mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_filename_name_text_view);
+
         }
     }
     private class FileAdapter extends  RecyclerView.Adapter<FileHolder>{
         private List<ProtectedFile> mFiles;
+
         public FileAdapter(List<ProtectedFile> files){
             mFiles = files;
         }
@@ -99,7 +104,7 @@ public class VaultFragment extends Fragment {
         public FileHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View view = layoutInflater
-                    .inflate(android.R.layout.simple_list_item_1,parent,false);
+                    .inflate(R.layout.item_file_preview_filename,parent,false);
 
             return new FileHolder(view);
         }
@@ -108,7 +113,6 @@ public class VaultFragment extends Fragment {
         public void onBindViewHolder(@NonNull FileHolder fileHolder, int position) {
             ProtectedFile file = mFiles.get(position);
             fileHolder.mFileTextView.setText(file.getFilename());
-
         }
 
         @Override

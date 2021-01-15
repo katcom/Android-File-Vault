@@ -13,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -23,8 +22,11 @@ public class VaultFragment extends Fragment {
     private DrawerLayout mDrawer;
     private NavigationView mNavigation;
     private RecyclerView mFileRecyclerView;
-    private FileAdapter mAdapter;
+    private RecyclerView.Adapter mAdapter;
+    private FileAdapterPreviewSmall mAdapterPreviewSmall;
     private FileVault mVault;
+
+    private String mPreviewMode;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +54,9 @@ public class VaultFragment extends Fragment {
         copySampleFiles();
 
         mVault = FileVault.get(this.getContext());
+        mPreviewMode = PreviewMode.PREVIEW_SMALL;
         updateUI();
+        //updateUI();
         return view;
     }
 
@@ -66,10 +70,31 @@ public class VaultFragment extends Fragment {
 
     private void updateUI() {
         List<ProtectedFile> files = mVault.getFiles();
+        switch(mPreviewMode){
+            case PreviewMode.FILE_DETAIL:
+                showFileDetail(files);
+                break;
+            case PreviewMode.PREVIEW_SMALL:
+                showSmallPreview(files);
+                break;
+        }
+        /* original code
+        List<ProtectedFile> files = mVault.getFiles();
+        mAdapter = new FileAdapterFileDetail(files);
+        mFileRecyclerView.setAdapter(mAdapter);
+        */
+    }
 
-        mAdapter = new FileAdapter(files);
+    private void showSmallPreview(List<ProtectedFile> files) {
+        mAdapter = new FileAdapterPreviewSmall(files);
         mFileRecyclerView.setAdapter(mAdapter);
     }
+
+    private void showFileDetail(List<ProtectedFile> files) {
+        mAdapter = new FileAdapterFileDetail(files);
+        mFileRecyclerView.setAdapter(mAdapter);
+    }
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
@@ -85,32 +110,32 @@ public class VaultFragment extends Fragment {
         return true;
     }
 
-    private class FileHolder extends RecyclerView.ViewHolder{
+    private class FileHolderFileDetail extends RecyclerView.ViewHolder{
         public TextView mFileTextView;
-        public FileHolder(@NonNull View itemView) {
+        public FileHolderFileDetail(@NonNull View itemView) {
             super(itemView);
             mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_filename_name_text_view);
 
         }
     }
-    private class FileAdapter extends  RecyclerView.Adapter<FileHolder>{
+    private class FileAdapterFileDetail extends  RecyclerView.Adapter<FileHolderFileDetail>{
         private List<ProtectedFile> mFiles;
 
-        public FileAdapter(List<ProtectedFile> files){
+        public FileAdapterFileDetail(List<ProtectedFile> files){
             mFiles = files;
         }
         @NonNull
         @Override
-        public FileHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+        public FileHolderFileDetail onCreateViewHolder(@NonNull ViewGroup parent, int i) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View view = layoutInflater
                     .inflate(R.layout.item_file_preview_filename,parent,false);
 
-            return new FileHolder(view);
+            return new FileHolderFileDetail(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull FileHolder fileHolder, int position) {
+        public void onBindViewHolder(@NonNull FileHolderFileDetail fileHolder, int position) {
             ProtectedFile file = mFiles.get(position);
             fileHolder.mFileTextView.setText(file.getFilename());
         }
@@ -120,4 +145,42 @@ public class VaultFragment extends Fragment {
             return mFiles.size();
         }
     }
+
+
+    private class FileHolderPreviewSmall extends RecyclerView.ViewHolder{
+        public TextView mFileTextView;
+        public FileHolderPreviewSmall(@NonNull View itemView) {
+            super(itemView);
+            mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_filename_text_view);
+        }
+    }
+    private class FileAdapterPreviewSmall extends  RecyclerView.Adapter<FileHolderPreviewSmall>{
+        private List<ProtectedFile> mFiles;
+
+        public FileAdapterPreviewSmall(@NonNull List<ProtectedFile> files){
+            mFiles = files;
+        }
+
+        @Override
+        public FileHolderPreviewSmall onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+            View view = layoutInflater
+                    .inflate(R.layout.item_file_preview_small,parent,false);
+
+            return new FileHolderPreviewSmall(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull FileHolderPreviewSmall fileHolder, int position) {
+            ProtectedFile file = mFiles.get(position);
+            fileHolder.mFileTextView.setText(file.getFilename());
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return mFiles.size();
+        }
+    }
+
 }

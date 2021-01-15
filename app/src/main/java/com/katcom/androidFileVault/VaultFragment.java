@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
@@ -23,10 +24,14 @@ public class VaultFragment extends Fragment {
     private NavigationView mNavigation;
     private RecyclerView mFileRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    private FileAdapterPreviewSmall mAdapterPreviewSmall;
+    private Button mZoomInButton;
+    private Button mZoomOutButton;
     private FileVault mVault;
 
     private String mPreviewMode;
+    private List<String> modes = PreviewMode.getModeList();
+    private int currentModeIndex = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,9 +61,41 @@ public class VaultFragment extends Fragment {
         mVault = FileVault.get(this.getContext());
         mPreviewMode = PreviewMode.PREVIEW_SMALL;
         updateUI();
-        //updateUI();
+
+        mZoomInButton = view.findViewById(R.id.button_zoom_in);
+        mZoomInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseBiggerItemLayout();
+            }
+        });
+
+        mZoomInButton = view.findViewById(R.id.button_zoom_out);
+        mZoomInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseSmallerItemLayout();
+            }
+        });
         return view;
     }
+
+    private void chooseSmallerItemLayout() {
+        if(currentModeIndex > 0){
+            currentModeIndex --;
+            mPreviewMode = modes.get(currentModeIndex);
+        }
+        updateUI();
+    }
+
+    private void chooseBiggerItemLayout() {
+        if(currentModeIndex < modes.size()-1){
+            currentModeIndex ++;
+            mPreviewMode = modes.get(currentModeIndex);
+        }
+        updateUI();
+    }
+
 
     private void copySampleFiles() {
         File file = new File(this.getContext().getFilesDir() + "/" + FileVault.sVaultDirectory);
@@ -78,6 +115,8 @@ public class VaultFragment extends Fragment {
                 showSmallPreview(files);
                 break;
         }
+        currentModeIndex = modes.indexOf(mPreviewMode);
+
         /* original code
         List<ProtectedFile> files = mVault.getFiles();
         mAdapter = new FileAdapterFileDetail(files);

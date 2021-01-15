@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/file_preview_image_view"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:src="@drawable/ic_launcher_background"/>
     <TextView
         android:id="@+id/file_preview_filename_text_view"

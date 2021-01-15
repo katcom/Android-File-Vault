@@ -18,21 +18,21 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button"
+                android:id="@+id/button_sort"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Sort" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/button_zoom_in"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Zoom in" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/button_zoom_out"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

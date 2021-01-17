@@ -8,14 +8,16 @@
     android:gravity="center">
 
     <ImageView
-        android:id="@+id/file_preview_image_view"
+        android:id="@+id/file_preview_small_image_view"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:src="@drawable/ic_launcher_background"/>
     <TextView
         android:id="@+id/file_preview_filename_text_view"
-        android:layout_below="@id/file_preview_image_view"
+        android:layout_below="@id/file_preview_small_image_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="sample_data_is_veryyyyyyyyyyyyyyyyyy_long"/>
+        android:text="sample_data_is_veryyyyyyyyyyyyyyyyyy_long"
+        android:height="20dp"
+        android:ellipsize="middle"/>
 </LinearLayout>

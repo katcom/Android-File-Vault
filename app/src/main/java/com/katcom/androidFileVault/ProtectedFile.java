@@ -5,12 +5,25 @@ import java.util.UUID;
 public class ProtectedFile {
     private String filename;
     private String filepath;
+    private String type;
+    private UUID id;
 
+    public ProtectedFile(String filename,String filepath,UUID id){
+        this.filename = filename;
+        this.filepath = filepath;
+        this.id = id;
+    }
+
+    public boolean isPicture(){
+        //TODO
+        return false;
+    }
+
+    ////////////////////////// Getter and Setter/////////////////////////////////////
     public UUID getId() {
         return id;
     }
 
-    private UUID id;
     public String getFilename() {
         return filename;
     }
@@ -27,12 +40,14 @@ public class ProtectedFile {
         this.filepath = filepath;
     }
 
-    private String type;
-
-    public ProtectedFile(String filename,String filepath,UUID id){
-        this.filename = filename;
-        this.filepath = filepath;
-        this.id = id;
+    public String getType() {
+        return type;
     }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+
 
 }

@@ -2,6 +2,7 @@ package com.katcom.androidFileVault;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -81,4 +82,25 @@ public class Utils {
             }
         }
     }
+
+    /**
+     *  Calculate px (pixel) from dp
+     * @param context
+     * @param dpValue
+     * @return
+     */
+    public static int dip2px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
+    /**
+     * Calculate dp from px (pixel)
+     */
+    public static int px2dip(Context context, float pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
+
+
 }

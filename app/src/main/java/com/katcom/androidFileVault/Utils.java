@@ -3,6 +3,7 @@ package com.katcom.androidFileVault;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -82,6 +83,42 @@ public class Utils {
             }
         }
     }
+
+    /**
+     * Load scaled picture from file
+     * @param context
+     * @param filepath the location of  file
+     * @param sizeX  the desired width, measured in dp
+     * @param sizeY  the desired height, measured in dp
+     * @return
+     */
+    public static Bitmap getScaledBitmap(Context context,String filepath,int sizeX,int sizeY){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filepath,options);
+
+        float srcWidth = options.outWidth;
+        float srcHeight = options.outHeight;
+
+        float targetWidth = Utils.dip2px(context,sizeX);
+        float targetHeight = Utils.dip2px(context,sizeY);
+
+        // Scale the picture
+        int inSampleSize = 1;
+        if(srcHeight > targetHeight || srcHeight > targetHeight){
+            if(srcWidth > targetWidth){
+                inSampleSize = Math.round(srcWidth/targetWidth);
+            }else{
+                inSampleSize = Math.round(srcHeight/targetHeight);
+            }
+        }
+
+        options = new BitmapFactory.Options();
+        options.inSampleSize = inSampleSize;
+
+        return BitmapFactory.decodeFile(filepath,options);
+    }
+
 
     /**
      *  Calculate px (pixel) from dp

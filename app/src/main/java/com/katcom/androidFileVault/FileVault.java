@@ -74,30 +74,7 @@ public class FileVault {
     }
 
     private Bitmap getPicturePreview(ProtectedFile file,int sizeX,int sizeY) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getFilepath(),options);
-
-        float srcWidth = options.outWidth;
-        float srcHeight = options.outHeight;
-
-        float targetWidth = Utils.dip2px(mContext,sizeX);
-        float targetHeight = Utils.dip2px(mContext,sizeY);
-
-        // Scale the picture
-        int inSampleSize = 1;
-        if(srcHeight > targetHeight || srcHeight > targetHeight){
-            if(srcWidth > targetWidth){
-                inSampleSize = Math.round(srcWidth/targetWidth);
-            }else{
-                inSampleSize = Math.round(srcHeight/targetHeight);
-            }
-        }
-
-        options = new BitmapFactory.Options();
-        options.inSampleSize = inSampleSize;
-
-        return BitmapFactory.decodeFile(file.getFilepath(),options);
+        return Utils.getScaledBitmap(mContext,file.getFilepath(),sizeX,sizeY);
     }
 
     public void importFile(String filepath){

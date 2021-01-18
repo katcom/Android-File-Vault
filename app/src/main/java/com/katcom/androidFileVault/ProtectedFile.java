@@ -14,11 +14,6 @@ public class ProtectedFile {
         this.id = id;
     }
 
-    public boolean isPicture(){
-        //TODO
-        return false;
-    }
-
     ////////////////////////// Getter and Setter/////////////////////////////////////
     public UUID getId() {
         return id;

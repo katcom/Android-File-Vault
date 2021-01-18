@@ -13,7 +13,7 @@ public class PreviewMode {
     final public static String FILE_DETAIL = "File Detail";
     final public static String PREVIEW_SMALL = "Preview Small";
     final public static String PREVIEW_MEDIUM = "Preview Medium";
-    //final public static String PREVIEW_BIG = "Preview Big";
+    final public static String PREVIEW_BIG = "Preview Big";
     private static List<String> modes;
 
     private PreviewMode(){}
@@ -23,6 +23,7 @@ public class PreviewMode {
          modes.add(FILE_DETAIL);
          modes.add(PREVIEW_SMALL);
          modes.add(PREVIEW_MEDIUM);
+         modes.add(PREVIEW_BIG);
     }
 
     /**

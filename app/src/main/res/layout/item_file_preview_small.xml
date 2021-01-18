@@ -11,7 +11,8 @@
         android:id="@+id/file_preview_small_image_view"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:src="@drawable/ic_launcher_background"/>
+        android:src="@drawable/ic_launcher_background"
+        />
     <TextView
         android:id="@+id/file_preview_filename_text_view"
         android:layout_below="@id/file_preview_small_image_view"
@@ -19,5 +20,6 @@
         android:layout_height="wrap_content"
         android:text="sample_data_is_veryyyyyyyyyyyyyyyyyy_long"
         android:height="20dp"
+        android:width="85dp"
         android:ellipsize="middle"/>
 </LinearLayout>

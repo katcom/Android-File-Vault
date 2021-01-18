@@ -7,4 +7,5 @@
     <color name="colorButtonWhite">#FFFFFF</color>
     <color name="colorPasswordInput">#F0F0F0</color>
     <color name="colorDarkGray">#1111</color>
+    <color name="colorDark">#D70F0F0F</color>
 </resources>

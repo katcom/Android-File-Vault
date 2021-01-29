@@ -6,14 +6,20 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 
 public class FileVault {
     public static String TAG ="FileVault"; // For debug
@@ -77,11 +83,60 @@ public class FileVault {
         return Utils.getScaledBitmap(mContext,file.getFilepath(),sizeX,sizeY);
     }
 
-    public void importFile(String filepath){
-        // TODO
+    /**
+     *
+     * @param filepath
+     */
+    public void importFileToRootDirectory(String filepath, String filename){
+        importFile(filepath, mContext.getFilesDir()+"/" + sVaultDirectory +"/" + filename, filename);
     }
+
+    public void importFile(String filepath, String targetPath,String filename){
+       Utils.copyFile(filepath,targetPath);
+       addFileEntry(filename,targetPath);
+    }
+
+    private void addFileEntry(String filename, String targetPath) {
+    }
+
     public void exportFile(String filename, String sourcePath,String targetPath){
         // TODO
     }
 
+    public void importAndEncryptFileToRootDirectory(String filename,InputStream in){
+
+    }
+
+    public void importAndEncryptFile(InputStream in,String targetPath){
+        CipherInputStream cin = getEncodedInputStream(in);
+        copyEncryptedFile(cin,targetPath);
+    }
+
+    private CipherInputStream getEncodedInputStream(InputStream in) {
+        // TODO
+        return  (CipherInputStream)in;
+    }
+
+    private void copyEncryptedFile(CipherInputStream cin, String targetPath){
+        try{
+            byte[] buffer = new byte[1024];
+            File outFile = new File(targetPath);
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(outFile));
+
+            int i;
+            while ((i = cin.read(buffer)) != -1) {
+                out.write(buffer, 0, i);
+            }
+            out.close();
+            cin.close();
+
+            out = null;
+            cin = null;
+        } catch (FileNotFoundException e) {
+            Log.e(TAG,"Cannot find file ",e);
+        } catch (IOException e) {
+            Log.e(TAG,"IO Error",e);
+        }
+
+    }
 }

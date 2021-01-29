@@ -9,6 +9,8 @@ import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -139,5 +141,92 @@ public class Utils {
         return (int) (pxValue / scale + 0.5f);
     }
 
+    public static void copyFile(InputStream in, String target){
+        BufferedOutputStream out = null;
+        File outFile = new File(target);
+        try{
+            out = new BufferedOutputStream(new FileOutputStream(outFile));
 
+            byte[] buffer = new byte[1024];
+            int read;
+            while((read = in.read(buffer)) != -1){
+                out.write(buffer, 0, read);
+            }
+
+            out.flush();
+            out.close();
+            in.close();
+
+            out = null;
+            in = null;
+
+        } catch (FileNotFoundException e) {
+            Log.e(TAG,"Failed to copy file from asset",e);
+        } catch (IOException e) {
+            Log.e(TAG,"Error",e);
+        }
+        finally {
+            if(in != null){
+                try{
+                    in.close();
+                }catch (IOException ioe){
+                    Log.e(TAG,"Error occurs when closing input stream",ioe);
+                }
+            }
+
+            if(out != null){
+                try{
+                    out.close();
+                }catch (IOException ioe){
+                    Log.e(TAG,"Error occurs when closing output stream",ioe);
+                }
+            }
+        }
+    }
+
+    public static void copyFile(String source,String target){
+        File inFile = new File(source);
+        File outFile = new File(target);
+        BufferedInputStream in = null;
+        BufferedOutputStream out = null;
+        try{
+            in = new BufferedInputStream(new FileInputStream(inFile));
+            out = new BufferedOutputStream(new FileOutputStream(outFile));
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while((read = in.read(buffer)) != -1){
+                out.write(buffer, 0, read);
+            }
+
+            out.flush();
+            out.close();
+            in.close();
+
+            out = null;
+            in = null;
+
+        } catch (FileNotFoundException e) {
+            Log.e(TAG,"Failed to copy file from asset",e);
+        } catch (IOException e) {
+            Log.e(TAG,"Error",e);
+        }
+        finally {
+            if(in != null){
+                try{
+                    in.close();
+                }catch (IOException ioe){
+                    Log.e(TAG,"Error occurs when closing input stream",ioe);
+                }
+            }
+
+            if(out != null){
+                try{
+                    out.close();
+                }catch (IOException ioe){
+                    Log.e(TAG,"Error occurs when closing output stream",ioe);
+                }
+            }
+        }
+    }
 }

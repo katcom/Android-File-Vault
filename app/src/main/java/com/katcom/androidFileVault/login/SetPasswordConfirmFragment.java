@@ -3,7 +3,6 @@ package com.katcom.androidFileVault.login;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import android.os.Bundle;
@@ -37,7 +36,7 @@ public class SetPasswordConfirmFragment extends Fragment implements Login {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v= inflater.inflate(R.layout.fragment_set_password_again,container,false);
+        View v= inflater.inflate(R.layout.fragment_set_password_confirm,container,false);
         mPasswordTextView = v.findViewById(R.id.set_password_text_view_again);
 
         mFinishButton = v.findViewById(R.id.button_set_password_again);

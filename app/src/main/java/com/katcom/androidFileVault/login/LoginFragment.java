@@ -1,4 +1,4 @@
-package com.katcom.androidFileVault;
+package com.katcom.androidFileVault.login;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -14,15 +14,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.katcom.androidFileVault.R;
+import com.katcom.androidFileVault.SecureSharePreference.SecureSharePreference;
+import com.katcom.androidFileVault.VaultActivity;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class LoginFragment extends Fragment {
+import static com.katcom.androidFileVault.utils.PasswordHelper.getSHA256MessageDigest;
+
+public class LoginFragment extends Fragment implements Login {
     private EditText mPasswordInput;
     private Button mLoginButton;
     private static final String TAG="LoginFragment";
-    private static final String SHA_256_TAG = "SHA-256";
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_login,container,false);
@@ -40,21 +45,20 @@ public class LoginFragment extends Fragment {
         return view;
     }
     private void login() {
+        
         String password = mPasswordInput.getText().toString();
         String digestPassword = getPasswordHash(password);
         Log.v(TAG,"digest pwd : " + digestPassword);
 
-        boolean isPasswordCorrect = checkPassword(digestPassword);
-
-        if(isPasswordCorrect) {
+        if(isPasswordCorrect(digestPassword)) {
             Intent i = new Intent(this.getContext(), VaultActivity.class);
             startActivity(i);
         }else{
             showLoginFailureDialog();
-
         }
 
     }
+
 
     private void showLoginFailureDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
@@ -70,27 +74,16 @@ public class LoginFragment extends Fragment {
         dialogBuilder.create().show();
     }
 
-    private boolean checkPassword(String digestPassword) {
-        return digestPassword.equals(getPasswordHash("abc"));
+    private boolean isPasswordCorrect(String digestPassword) {
+        SecureSharePreference secretShare = SecureSharePreference.getInstance(getContext(),Login.LOGIN_INFO_PREF_FILE);
+        String passwordRecord = secretShare.getString(Login.TAG_PASSWORD,null);
+
+        return digestPassword.equals(passwordRecord);
     }
 
     private String getPasswordHash(String password){
         return getSHA256MessageDigest(password);
     }
 
-    private String getSHA256MessageDigest(String str) {
-        String digestText = "";
-        try{
-
-            MessageDigest md  = MessageDigest.getInstance(SHA_256_TAG);
-            md.update(str.getBytes());
-            byte[] tempDigestArray = md.digest();
-            digestText = Arrays.toString(tempDigestArray);
-
-        }catch (NoSuchAlgorithmException e){
-            Log.e(TAG,"No algorithm found with tag : "+ SHA_256_TAG,e);
-        }
-        return digestText;
-    }
 
 }

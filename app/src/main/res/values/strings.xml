@@ -12,4 +12,10 @@
     <string name="star">Star</string>
     <string name="login">Login</string>
     <string name="password_hint">Please Enter Your Code</string>
+    <string name="please_set_password">Please Enter a Password</string>
+    <string name="next_move_set_password">Next</string>
+    <string name="previous_move_set_password">Back</string>
+    <string name="two_password_not_match">The passwords do not match, please entry again</string>
+    <string name="two_password_not_match_title">Passwords not Match</string>
+    <string name="enter_password_again">Enter Again</string>
 </resources>

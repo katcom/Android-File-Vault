@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.katcom.androidFileVault.fileRecyclerView.FilePreviewAdapter;
+
 import java.io.File;
 import java.util.List;
 
@@ -37,14 +39,13 @@ public class VaultFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_vault, container, false);
         setHasOptionsMenu(true);
-
         // Bind the controllers to the elements in layout
         //mDrawer = view.findViewById(R.id.drawer_layout);
         //mNavigation = view.findViewById(R.id.navigation_view);
@@ -159,7 +160,7 @@ public class VaultFragment extends Fragment {
      * @param files
      */
     private void showBigPreview(List<ProtectedFile> files) {
-        mAdapter = new FileAdapterPreviewBig(files);
+        mAdapter = new FilePreviewAdapter(files,PreviewMode.PREVIEW_BIG,getContext());
         mFileRecyclerView.setAdapter(mAdapter);
         columnsInGrid = 2;
         mFileRecyclerView.setLayoutManager(new GridLayoutManager(this.getContext(), columnsInGrid));
@@ -172,7 +173,7 @@ public class VaultFragment extends Fragment {
      * @param files
      */
     private void showMediumPreview(List<ProtectedFile> files) {
-        mAdapter = new FileAdapterPreviewMedium(files);
+        mAdapter = new FilePreviewAdapter(files,PreviewMode.PREVIEW_MEDIUM,getContext());
         mFileRecyclerView.setAdapter(mAdapter);
         columnsInGrid = 3;
         mFileRecyclerView.setLayoutManager(new GridLayoutManager(this.getContext(), columnsInGrid));
@@ -187,7 +188,7 @@ public class VaultFragment extends Fragment {
      */
     private void showSmallPreview(List<ProtectedFile> files) {
         columnsInGrid = 4;
-        mAdapter = new FileAdapterPreviewSmall(files);
+        mAdapter = new FilePreviewAdapter(files,PreviewMode.PREVIEW_SMALL,getContext());
         mFileRecyclerView.setAdapter(mAdapter);
 
         columnsInGrid = 4;
@@ -201,7 +202,7 @@ public class VaultFragment extends Fragment {
      * @param files
      */
     private void showFileDetail(List<ProtectedFile> files) {
-        mAdapter = new FileAdapterFileDetail(files);
+        mAdapter = new FilePreviewAdapter(files,PreviewMode.FILE_DETAIL,getContext());
         mFileRecyclerView.setAdapter(mAdapter);
 
         columnsInGrid = 1;
@@ -221,207 +222,5 @@ public class VaultFragment extends Fragment {
 
         }
         return true;
-    }
-
-    public void viewImage(ProtectedFile file) {
-        Intent intent = ImageViewerActivity.newIntent(getActivity(), file.getFilename(), file.getFilepath());
-        startActivity(intent);
-    }
-//////////// Utils for RecyclerView ///////////////////
-/**
- **   The controller of small preview, showing a small-size preview image of files, along with their file names
- */
-public class FileHolderPreviewSmall extends RecyclerView.ViewHolder {
-    public TextView mFileTextView;
-    public ImageView mImageView;
-    public FileHolderPreviewSmall(@NonNull View itemView) {
-        super(itemView);
-        mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_filename_text_view);
-        mImageView = (ImageView) itemView.findViewById(R.id.file_preview_small_image_view);
-    }
-
-}
-
-    public class FileAdapterPreviewSmall extends  RecyclerView.Adapter<FileHolderPreviewSmall> {
-        private List<ProtectedFile> mFiles;
-
-        public FileAdapterPreviewSmall(@NonNull List<ProtectedFile> files) {
-            mFiles = files;
-        }
-
-        @Override
-        public FileHolderPreviewSmall onCreateViewHolder(@NonNull ViewGroup parent, int i) {
-            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater
-                    .inflate(R.layout.item_file_preview_small, parent, false);
-
-            return new FileHolderPreviewSmall(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FileHolderPreviewSmall fileHolder, int position) {
-            final ProtectedFile file = mFiles.get(position);
-            fileHolder.mFileTextView.setText(file.getFilename());   // Bind the file name to the user interface
-            fileHolder.mImageView.setImageBitmap(mVault.getPreview(file,60,60)); // Bind the preview image to the user interface
-            fileHolder.mImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    viewImage(file);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mFiles.size();
-        }
-    }
-
-    /*
-        The controller of low-fidelity preview, showing only the file names
-     */
-    private class FileHolderFileDetail extends RecyclerView.ViewHolder {
-        public TextView mFileTextView;
-
-        public FileHolderFileDetail(@NonNull View itemView) {
-            super(itemView);
-            mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_filename_name_text_view);
-
-        }
-    }
-
-    private class FileAdapterFileDetail extends RecyclerView.Adapter<FileHolderFileDetail> {
-        private List<ProtectedFile> mFiles;
-
-        public FileAdapterFileDetail(List<ProtectedFile> files) {
-            mFiles = files;
-        }
-
-        @NonNull
-        @Override
-        public FileHolderFileDetail onCreateViewHolder(@NonNull ViewGroup parent, int i) {
-            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater
-                    .inflate(R.layout.item_file_preview_filename, parent, false);
-
-            return new FileHolderFileDetail(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FileHolderFileDetail fileHolder, int position) {
-            final ProtectedFile file = mFiles.get(position);
-            //fileHolder.mFileTextView.setText(file.getFilename());
-            fileHolder.mFileTextView.setText(file.getFilename()); // Bind the filename to the individual cell in the recycler view
-            fileHolder.mFileTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    viewImage(file);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mFiles.size();
-        }
-    }
-
-
-    /*
-     *   The controller of the medium-fidelity view, showing a medium-size preview image of the files
-     */
-    private class FileHolderPreviewMedium extends RecyclerView.ViewHolder{
-        //public TextView mFileTextView;
-        public ImageView mImageView;
-        public FileHolderPreviewMedium(@NonNull View itemView) {
-            super(itemView);
-            //mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_medium_imageView);
-            mImageView = itemView.findViewById(R.id.file_preview_medium_imageView);
-
-        }
-    }
-    private class FileAdapterPreviewMedium extends  RecyclerView.Adapter<FileHolderPreviewMedium>{
-        private List<ProtectedFile> mFiles;
-
-        public FileAdapterPreviewMedium(@NonNull List<ProtectedFile> files){
-            mFiles = files;
-        }
-
-        @Override
-        public FileHolderPreviewMedium onCreateViewHolder(@NonNull ViewGroup parent, int i) {
-            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater
-                    .inflate(R.layout.item_file_preview_medium,parent,false);
-
-            return new FileHolderPreviewMedium(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FileHolderPreviewMedium fileHolder, int position) {
-            final ProtectedFile file = mFiles.get(position);
-            //fileHolder.setText(file.getFilename());
-            fileHolder.mImageView.setImageBitmap(mVault.getPreview(file,120,120)); // Bind the picture to the view
-            fileHolder.mImageView.setOnClickListener(new View.OnClickListener(){
-
-                @Override
-                public void onClick(View v) {
-                    viewImage(file);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mFiles.size();
-        }
-    }
-
-    /*
-     *   The controller of the high-fidelity view, showing a big preview image of the files
-     */
-    private class FileHolderPreviewBig extends RecyclerView.ViewHolder{
-        //public TextView mFileTextView;
-        public ImageView mImageView;
-        public FileHolderPreviewBig(@NonNull View itemView) {
-            super(itemView);
-            //mFileTextView = (TextView) itemView.findViewById(R.id.file_preview_medium_imageView);
-            mImageView = itemView.findViewById(R.id.file_preview_big_image_view);
-
-        }
-    }
-    private class FileAdapterPreviewBig extends  RecyclerView.Adapter<FileHolderPreviewBig>{
-        private List<ProtectedFile> mFiles;
-
-        public FileAdapterPreviewBig(@NonNull List<ProtectedFile> files){
-            mFiles = files;
-        }
-
-        @Override
-        public FileHolderPreviewBig onCreateViewHolder(@NonNull ViewGroup parent, int i) {
-            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater
-                    .inflate(R.layout.item_file_preview_big,parent,false);
-
-            return new FileHolderPreviewBig(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FileHolderPreviewBig fileHolder, int position) {
-            final ProtectedFile file = mFiles.get(position);
-            //fileHolder.setText(file.getFilename());
-            fileHolder.mImageView.setImageBitmap(mVault.getPreview(file,190,190)); // Bind the picture to the view
-            fileHolder.mImageView.setOnClickListener(new View.OnClickListener(){
-
-                @Override
-                public void onClick(View v) {
-                    viewImage(file);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mFiles.size();
-        }
     }
 }

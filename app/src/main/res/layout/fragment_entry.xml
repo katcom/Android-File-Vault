@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EntryActivity">
+    tools:context=".EntryActivity"
+    android:background="@drawable/entry_background">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="bottom">
         <Button
             android:id="@+id/button_open_vault"
             android:layout_height="wrap_content"

@@ -27,5 +27,19 @@ public interface Crypto {
         writeData(in,out);
 
     }*/
+    /*public CipherOutputStream getDecryptedInputStream(String filepath){
+
+    }*/
+
+    /**
+     * This method returns an IntputStream pointed to an encrypted file which decrypts file on the fly.
+     * In other words, it is connected to an encrypted file, when you read data via the CipherOutputStream,
+     * you get the decrypted data instead of the encrypted.
+     *
+     * @param filepath
+     * @return
+     */
+    CipherOutputStream getDecryptedInputStream(String filepath);
+
 
 }

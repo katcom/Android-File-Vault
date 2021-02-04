@@ -7,10 +7,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-
-    <style name="FullScreenDialgo" parent="Theme.AppCompat.Dialog">
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:windowFullscreen">true</item>
+    <style name="hideTitle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
     </style>
 
 </resources>

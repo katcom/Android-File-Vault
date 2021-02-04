@@ -9,11 +9,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".login.LoginActivity"></activity>
+        <activity android:name=".login.LoginActivity" ></activity>
         <activity android:name=".VaultActivity" android:exported="false"/>
         <activity android:name=".ImageViewerActivity" android:exported="false"/>
         <activity android:name=".login.SetPasswordActivity" android:exported="false"/>
-        <activity android:name=".EntryActivity">
+        <activity android:name=".EntryActivity" android:theme="@style/hideTitle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

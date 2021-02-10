@@ -2,6 +2,7 @@ package com.katcom.androidFileVault;
 
 import android.net.Uri;
 
+import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 
 public interface Crypto {
@@ -39,7 +40,7 @@ public interface Crypto {
      * @param filepath
      * @return
      */
-    CipherOutputStream getDecryptedInputStream(String filepath);
+    CipherInputStream getDecryptedInputStream(String filepath);
 
 
 }

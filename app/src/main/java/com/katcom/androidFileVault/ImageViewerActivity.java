@@ -5,21 +5,18 @@ import android.content.Intent;
 import androidx.fragment.app.Fragment;
 
 public class ImageViewerActivity extends SingleFragmentActivity {
-    public static final String EXTRA_FILE_NAME= "com.katcom.adnroidFileVault.imageviewerIntent.filename";
-    public static final String EXTRA_FILE_PATH = "com.katcom.adnroidFileVault.imageviewerIntent.filepath";
+    public static final String EXTRA_FILE = "com.katcom.adnroidFileVault.imageviewerIntent.file";
 
     @Override
     protected Fragment createFragment() {
-        String filename = (String)getIntent().getSerializableExtra(EXTRA_FILE_NAME);
-        String filepath = (String)getIntent().getSerializableExtra(EXTRA_FILE_PATH);
+        ProtectedFile file= (ProtectedFile) getIntent().getSerializableExtra(EXTRA_FILE);
 
-        return ImageViewerFragment.newInstance(filename,filepath);
+        return ImageViewerFragment.newInstance(file);
     }
 
-    public static Intent newIntent(Context packageContext, String filename,String filepath){
+    public static Intent newIntent(Context packageContext, ProtectedFile file){
         Intent intent = new Intent(packageContext, ImageViewerActivity.class);
-        intent.putExtra(EXTRA_FILE_NAME,filename);
-        intent.putExtra(EXTRA_FILE_PATH,filepath);
+        intent.putExtra(EXTRA_FILE,file);
         return intent;
     }
 }

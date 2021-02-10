@@ -1,8 +1,9 @@
 package com.katcom.androidFileVault;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class ProtectedFile {
+public class ProtectedFile implements Serializable {
     private String filename;
     private String filepath;
     private String type;

@@ -17,26 +17,31 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Button
+            <ImageButton
                 android:id="@+id/button_sort"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Sort"
                 android:layout_weight="1"
-                android:text="Sort" />
+                android:src="@drawable/ic_sort"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/button_zoom_in"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Zoom in"
                 android:layout_weight="1"
-                android:text="Zoom in" />
 
-            <Button
+                android:src="@drawable/ic_zoom_in"/>
+
+            <ImageButton
                 android:id="@+id/button_zoom_out"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Zoom out"
                 android:layout_weight="1"
-                android:text="Zoom out" />
+
+                android:src="@drawable/ic_zoom_out"/>
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

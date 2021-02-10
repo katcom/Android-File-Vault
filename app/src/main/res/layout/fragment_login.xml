@@ -25,6 +25,7 @@
         android:id="@+id/login_button"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button"
         android:text="@string/login"
         android:padding="5dp"/>
 </LinearLayout>

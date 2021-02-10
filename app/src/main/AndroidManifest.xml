@@ -9,17 +9,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".login.LoginActivity" ></activity>
-        <activity android:name=".VaultActivity" android:exported="false"/>
-        <activity android:name=".ImageViewerActivity" android:exported="false"/>
-        <activity android:name=".login.SetPasswordActivity" android:exported="false"/>
-        <activity android:name=".EntryActivity" android:theme="@style/hideTitle">
+        <activity android:name=".ExportActivity"></activity>
+        <activity android:name=".login.LoginActivity" />
+        <activity
+            android:name=".VaultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ImageViewerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".login.SetPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EntryActivity"
+            android:theme="@style/hideTitle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+    </application>
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>

@@ -18,4 +18,8 @@
     <string name="two_password_not_match">The passwords do not match, please entry again</string>
     <string name="two_password_not_match_title">Passwords not Match</string>
     <string name="enter_password_again">Enter Again</string>
+    <string name="search">Search</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="string_export">export</string>
+    <string name="string_share">share</string>
 </resources>

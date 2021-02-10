@@ -47,7 +47,7 @@ public class SecureFileOpener implements FileOpener  {
 
     @Override
     public void openPicture(ProtectedFile file) {
-        Intent intent = ImageViewerActivity.newIntent(mContext, file.getFilename(), file.getFilepath());
+        Intent intent = ImageViewerActivity.newIntent(mContext, file);
         mContext.startActivity(intent);
     }
 

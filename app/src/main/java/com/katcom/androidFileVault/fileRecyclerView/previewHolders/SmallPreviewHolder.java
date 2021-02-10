@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.katcom.androidFileVault.FileVault;
+import com.katcom.androidFileVault.FileManager;
 import com.katcom.androidFileVault.ProtectedFile;
 import com.katcom.androidFileVault.R;
 import com.katcom.androidFileVault.SecureFileOpener;
@@ -26,7 +26,7 @@ public class SmallPreviewHolder extends ItemViewHolder<ProtectedFile> {
     @Override
     public void bindViewData(final ProtectedFile file, final Context context) {
         mFileTextView.setText(file.getFilename());   // Bind the file name to the user interface
-        mImageView.setImageBitmap(FileVault.get(context).getPreview(file,60,60)); // Bind the preview image to the user interface
+        mImageView.setImageBitmap(FileManager.get(context).getPreview(file,60,60)); // Bind the preview image to the user interface
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1,41 +1,57 @@
 package com.katcom.androidFileVault;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
 import com.katcom.androidFileVault.fileRecyclerView.FilePreviewAdapter;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
+
 public class VaultFragment extends Fragment {
-    //private DrawerLayout mDrawer;
-    //private NavigationView mNavigation;
+    private static final int REQUEST_FILE_CODE = 1;
+    private DrawerLayout mDrawer;
+    private NavigationView mNavigation;
     private RecyclerView mFileRecyclerView;
     private RecyclerView.Adapter mAdapter;
-    private Button mZoomInButton;
-    private Button mZoomOutButton;
-    private FileVault mVault;
+    private ImageButton mZoomInButton;
+    private ImageButton mZoomOutButton;
+    private FileManager mVault;
     private int columnsInGrid = 1;
     private String mPreviewMode;
     private List<String> modes = PreviewMode.getModeList();
     private int currentModeIndex = 0;
     private final String DIALOG_IMAGE_TAG = "DialogImage";
-
+    private final String TAG="VaultFragment";
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,25 +63,27 @@ public class VaultFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_vault, container, false);
         setHasOptionsMenu(true);
         // Bind the controllers to the elements in layout
-        //mDrawer = view.findViewById(R.id.drawer_layout);
-        //mNavigation = view.findViewById(R.id.navigation_view);
+        mDrawer = view.findViewById(R.id.drawer_layout);
+        mNavigation = view.findViewById(R.id.navigation_view);
 
-        /*mNavigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        mNavigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 int id = menuItem.getItemId();
+                switch (id){
+                    case R.id.action_import:
+                        showChooseFileActivity();
+                }
                 return false;
             }
-        });*/
+        });
 
         mFileRecyclerView = view.findViewById(R.id.vault_file_recycler_view);
         //mFileRecyclerView.setLayoutManager(new LinearLayoutManager(thi));
 
-        // Put some sample files in the vault
-        copySampleFiles();
 
         // Get a instance of the FileVault object
-        mVault = FileVault.get(this.getContext());
+        mVault = FileManager.get(this.getContext());
 
         //  Set the preview mode, by default small preview
         mPreviewMode = PreviewMode.PREVIEW_SMALL;
@@ -80,14 +98,25 @@ public class VaultFragment extends Fragment {
             }
         });
 
-        mZoomInButton = view.findViewById(R.id.button_zoom_out);
-        mZoomInButton.setOnClickListener(new View.OnClickListener() {
+        mZoomOutButton = view.findViewById(R.id.button_zoom_out);
+        mZoomOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 chooseSmallerItemLayout();  // show lower-fidelity preview image
             }
         });
+
+        // Put some sample files in the vault
+        copySampleFiles();
         return view;
+    }
+
+    private void showChooseFileActivity() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(intent,REQUEST_FILE_CODE);
     }
 
     /*
@@ -118,11 +147,29 @@ public class VaultFragment extends Fragment {
         This method copy the sample files from Asset to the private storage.
      */
     private void copySampleFiles() {
-        File file = new File(this.getContext().getFilesDir() + "/" + FileVault.sVaultDirectory);
+        File file = new File(this.getContext().getFilesDir() + "/" + FileManager.sVaultDirectory);
         if (!file.exists()) {
             file.mkdir();
         }
-        Utils.copyFilesFromAsset(this.getContext(), "sample_files", FileVault.sVaultDirectory);
+
+        String source = "/sample_files";
+        String vaultPath = getActivity().getFilesDir() + "/" + FileManager.sVaultDirectory;
+        AssetManager assets = getActivity().getAssets();
+        try {
+            String[] files = assets.list(source);
+            for(String filename:files){
+                String filepath = source + "/" + filename;
+                String targetPath = vaultPath + "/" + filename;
+                FileDescriptor in = assets.openFd(filepath).getFileDescriptor();
+
+                mVault.importFile(filename,in,targetPath);
+            }
+        }catch (FileNotFoundException e){
+            e.printStackTrace();;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -219,8 +266,51 @@ public class VaultFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
+            case R.id.menu_export_selected_files:
+                Intent i = new Intent(getActivity(),ExportActivity.class);
+                startActivity(i);
+                break;
         }
         return true;
+    }
+
+    @Override
+    public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode != RESULT_OK) return;
+
+        if(requestCode == REQUEST_FILE_CODE && data != null){
+            if(data.getClipData() != null) {
+                int count = data.getClipData().getItemCount();
+
+                for (int i = 0; i < count; i++) {
+                    Uri SelectedFile = data.getClipData().getItemAt(i).getUri();
+                    importAndEncryptFile(SelectedFile);
+                }
+            }else{
+                Uri selectedFile = data.getData();
+                importAndEncryptFile(selectedFile);
+            }
+        }
+    }
+
+    public void importAndEncryptFile(Uri uri) {
+        ContentResolver contentResolver = getContext().getContentResolver();
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            String filename = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            Log.v(TAG,filename);
+            try {
+                String filepath = getContext().getFilesDir() +"/" + mVault.getVaultDirectory() + "/" + filename;
+                mVault.importFile(filename,contentResolver.openFileDescriptor(uri,"r").getFileDescriptor(),filepath);
+                Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
+
+                updateUI();
+            } catch (FileNotFoundException e) {
+                Log.e(TAG,e.toString());
+            }
+        }
     }
 }

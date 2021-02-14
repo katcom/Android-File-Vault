@@ -8,8 +8,11 @@
     <item android:id="@+id/menu_item_clear"
         android:title="@string/clear_search"
         app:showAsAction="never"/>
+
     <item android:id="@+id/menu_export_selected_files"
         android:title="@string/export_selected_file"/>
+    <item android:id="@+id/menu_take_photo"
+        android:title="@string/take_photo"/>
     <item android:id="@+id/menu_share_selected_files"
         android:title="@string/share_file"/>
     <item android:id="@+id/menu_export_all_files"
@@ -20,4 +23,5 @@
         android:title="@string/latest"/>
     <item android:id="@+id/menu_star"
         android:title="@string/star"/>
+
 </menu>

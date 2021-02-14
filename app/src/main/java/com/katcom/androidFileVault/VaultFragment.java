@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,13 +34,13 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 
 public class VaultFragment extends Fragment {
     private static final int REQUEST_FILE_CODE = 1;
+    private static final int REQUEST_IMAGE_CAPTURE = 2;
     private DrawerLayout mDrawer;
     private NavigationView mNavigation;
     private RecyclerView mFileRecyclerView;
@@ -73,6 +75,10 @@ public class VaultFragment extends Fragment {
                 switch (id){
                     case R.id.action_import:
                         showChooseFileActivity();
+                        break;
+                    case R.id.action_help:
+                        showHelpInfo();
+                        break;
                 }
                 return false;
             }
@@ -106,8 +112,7 @@ public class VaultFragment extends Fragment {
             }
         });
 
-        // Put some sample files in the vault
-        copySampleFiles();
+
         return view;
     }
 
@@ -146,31 +151,7 @@ public class VaultFragment extends Fragment {
     /*
         This method copy the sample files from Asset to the private storage.
      */
-    private void copySampleFiles() {
-        File file = new File(this.getContext().getFilesDir() + "/" + FileManager.sVaultDirectory);
-        if (!file.exists()) {
-            file.mkdir();
-        }
 
-        String source = "/sample_files";
-        String vaultPath = getActivity().getFilesDir() + "/" + FileManager.sVaultDirectory;
-        AssetManager assets = getActivity().getAssets();
-        try {
-            String[] files = assets.list(source);
-            for(String filename:files){
-                String filepath = source + "/" + filename;
-                String targetPath = vaultPath + "/" + filename;
-                FileDescriptor in = assets.openFd(filepath).getFileDescriptor();
-
-                mVault.importFile(filename,in,targetPath);
-            }
-        }catch (FileNotFoundException e){
-            e.printStackTrace();;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     /**
      * Update the recylerview according to the preview mode
@@ -256,7 +237,13 @@ public class VaultFragment extends Fragment {
         mFileRecyclerView.setLayoutManager(new GridLayoutManager(this.getContext(), columnsInGrid));
     }
 
+    public void takePhoto(){
+        Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
+        if(imageTakeIntent.resolveActivity(getActivity().getPackageManager()) != null){
+            startActivityForResult(imageTakeIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.export_menu, menu);
@@ -270,6 +257,10 @@ public class VaultFragment extends Fragment {
                 Intent i = new Intent(getActivity(),ExportActivity.class);
                 startActivity(i);
                 break;
+            case R.id.menu_take_photo:
+                takePhoto();
+                break;
+
         }
         return true;
     }
@@ -293,6 +284,22 @@ public class VaultFragment extends Fragment {
                 importAndEncryptFile(selectedFile);
             }
         }
+        if(requestCode == REQUEST_IMAGE_CAPTURE){
+            Bundle extras = data.getExtras();
+            Bitmap image = (Bitmap)extras.get("data");
+
+            try {
+                saveImage(image);
+                updateUI();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void saveImage(Bitmap image) throws IOException {
+        mVault.importImage(image);
+
     }
 
     public void importAndEncryptFile(Uri uri) {
@@ -312,5 +319,14 @@ public class VaultFragment extends Fragment {
                 Log.e(TAG,e.toString());
             }
         }
+    }
+
+
+    private String getVaultDirectory() {
+        return getActivity().getFilesDir() +"/" +mVault.getVaultDirectory();
+    }
+
+    protected void showHelpInfo(){
+        boolean has = mVault.hasPrivateKey();
     }
 }

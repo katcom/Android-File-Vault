@@ -1,3 +1,9 @@
+/**
+ * The entry point of the file vault.
+ * When the user opens the vault for the first time, it shows a screen to help user setup password.
+ * And open the vault after the sign up.
+ * If the user has setup password before, it displays login screen to allow user login to the vault.
+ */
 package com.katcom.androidFileVault;
 
 import android.content.Intent;
@@ -6,6 +12,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +28,12 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 
 public class EntryFragment extends Fragment {
+    private static final String TAG = "EntryFragment";
     private Button mVaultOpenButton;
     private FileManager mVault;
     @Override
@@ -41,6 +53,11 @@ public class EntryFragment extends Fragment {
         return view;
     }
 
+    /**
+     * If it is the first time user opens the vault, it setup the vault by displaying the SetPassword activity,
+     * generating a private key for encryption and decryption, and copying sample files into the vault
+     * Otherwise, shows the screen where user can login by entering the password.
+     */
     private void openVault() {
         if(!hasPassword()){
             // Launch activity to setup password
@@ -57,12 +74,16 @@ public class EntryFragment extends Fragment {
         }
     }
 
+    /**
+     * Generate a private key in the vault for encryption and decryption of files
+     */
     private void generatePrivateKey() {
-        if(!mVault.hasPrivateKey()){
             mVault.generateKey();
-        }
     }
 
+    /**
+     * Import some sample files from assets to the vault
+     */
     private void copySampleFiles() {
         File file = new File(this.getContext().getFilesDir() + "/" + FileManager.sVaultDirectory);
         if (!file.exists()) {
@@ -89,18 +110,23 @@ public class EntryFragment extends Fragment {
                 mVault.importFileFromAsset(filename,filepath,targetPath);
 
             }
-        }catch (FileNotFoundException e){
-            e.printStackTrace();;
-        } catch (IOException e) {
-            e.printStackTrace();
+        }catch (IOException | NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e){
+            Log.e(TAG,e.toString());
         }
     }
 
+    /**
+     * Launch the activity to allow user setup a password
+     */
     private void setPassword() {
         Intent intent = new Intent(this.getContext(), SetPasswordActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * Check if the user has set a password before
+     * @return if a password has been set
+     */
     private boolean hasPassword(){
         SecureSharePreference secretShare = SecureSharePreference.getInstance(getContext(), Login.LOGIN_INFO_PREF_FILE);
         return secretShare.contains(Login.TAG_PASSWORD);

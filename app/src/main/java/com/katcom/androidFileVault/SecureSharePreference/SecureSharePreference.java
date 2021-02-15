@@ -1,3 +1,12 @@
+/**
+ * The SecureSharePreference is an costumed extension of SharePreference, a light-weight database provided by Android.
+ * SecureSharePreference would encrypt the records before storing it in the database file,
+ * Instead of storing the plain text.
+ *
+ * Although Android provides an EncryptedSharePreference, which also encrypts the records,
+ * this costumed extension is used in this project because EncryptedSharePreference is only available
+ * on API 23 (Android 6 )and above, but the min sdk of this project is API 19 (Android 5)
+ */
 package com.katcom.androidFileVault.SecureSharePreference;
 
 import android.content.Context;

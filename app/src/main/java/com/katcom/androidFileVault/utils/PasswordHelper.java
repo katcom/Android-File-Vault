@@ -10,6 +10,11 @@ public class PasswordHelper {
     private static final String SHA_256_TAG = "SHA-256";
     private static final String TAG = "PasswordHelper";
 
+    /**
+     * Given a text, this method generates a SHA-256 message digest of the plain text
+     * @param str  text to be hashed
+     * @return  SHA-256  digest of the text
+     */
     public static String getSHA256MessageDigest(String str) {
         String digestText = "";
         try{
@@ -24,11 +29,15 @@ public class PasswordHelper {
         }
         return digestText;
     }
+
+    /**
+     * Given a password in plain text, this method returns the SHA-256 hash of the password
+     * @param password
+     * @return SHA-256 hash code of the password
+     */
     public static String getPasswordHash(String password){
         return getSHA256MessageDigest(password);
     }
-    public static boolean hasPassword(){
-        return false;
-    }
+
 
 }

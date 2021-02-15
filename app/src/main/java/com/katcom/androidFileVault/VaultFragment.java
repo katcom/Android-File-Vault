@@ -79,6 +79,8 @@ public class VaultFragment extends Fragment {
                     case R.id.action_help:
                         showHelpInfo();
                         break;
+                    case R.id.action_about:
+                        showEncryptTest();
                 }
                 return false;
             }
@@ -114,6 +116,10 @@ public class VaultFragment extends Fragment {
 
 
         return view;
+    }
+
+    private void showEncryptTest() {
+        mVault.showEncryptTest();
     }
 
     private void showChooseFileActivity() {
@@ -311,7 +317,7 @@ public class VaultFragment extends Fragment {
             Log.v(TAG,filename);
             try {
                 String filepath = getContext().getFilesDir() +"/" + mVault.getVaultDirectory() + "/" + filename;
-                mVault.importFile(filename,contentResolver.openFileDescriptor(uri,"r").getFileDescriptor(),filepath);
+                mVault.importFile(filename,contentResolver.openInputStream(uri),filepath);
                 Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
 
                 updateUI();

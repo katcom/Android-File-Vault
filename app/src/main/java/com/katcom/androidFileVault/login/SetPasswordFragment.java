@@ -1,5 +1,8 @@
+/**
+ * In this fragment, user sets a password for entering the fault, then is directed to another
+ * fragment to enter the password again for confirmation.
+ */
 package com.katcom.androidFileVault.login;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,9 +44,8 @@ public class SetPasswordFragment extends Fragment  implements Login{
         mButtonSetPassword.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String rawPassword = mPasswordInput.getText().toString();
-                firstPassword = getPasswordHash(rawPassword);
-                rawPassword = null;
+                String rawPassword = mPasswordInput.getText().toString(); // get the password
+                firstPassword = getPasswordHash(rawPassword);   // make message digest of the password
                 startConfirmPassword();
             }
 
@@ -52,8 +54,13 @@ public class SetPasswordFragment extends Fragment  implements Login{
         return view;
     }
 
+    /**
+     * Show a new fragment where user would enter the password again.
+     */
     private void startConfirmPassword() {
+        // The new fragment needs the first password user has entered for comparision.
         Fragment confirmFragment = SetPasswordConfirmFragment.newInstance(firstPassword);
+
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction()
                 .replace(R.id.fragment_container,confirmFragment)

@@ -121,6 +121,33 @@ public class Utils {
         return BitmapFactory.decodeFile(filepath,options);
     }
 
+    public static Bitmap getScaledBitmap(Context context,InputStream in,int sizeX,int sizeY){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(in,null,options);
+
+        float srcWidth = options.outWidth;
+        float srcHeight = options.outHeight;
+
+        float targetWidth = Utils.dip2px(context,sizeX);
+        float targetHeight = Utils.dip2px(context,sizeY);
+
+        // Scale the picture
+        int inSampleSize = 1;
+        if(srcHeight > targetHeight || srcHeight > targetHeight){
+            if(srcWidth > targetWidth){
+                inSampleSize = Math.round(srcWidth/targetWidth);
+            }else{
+                inSampleSize = Math.round(srcHeight/targetHeight);
+            }
+        }
+
+        options = new BitmapFactory.Options();
+        options.inSampleSize = inSampleSize;
+
+        return   BitmapFactory.decodeStream(in,null,options);
+    }
+
 
     /**
      *  Calculate px (pixel) from dp

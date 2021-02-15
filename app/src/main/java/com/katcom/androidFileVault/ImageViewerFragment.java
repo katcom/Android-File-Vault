@@ -17,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import java.io.FileNotFoundException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 
 public class ImageViewerFragment extends Fragment {
     private static final String ARG_FILE = "file";
@@ -108,8 +111,14 @@ public class ImageViewerFragment extends Fragment {
     private void export(Uri uri) {
         FileManager vault = FileManager.get(getContext());
         try {
-            vault.exportFile(mFile,getContext().getContentResolver().openFileDescriptor(uri,"w").getFileDescriptor());
+            vault.exportFile(mFile,getContext().getContentResolver().openOutputStream(uri));
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableEntryException e) {
             e.printStackTrace();
         }
 

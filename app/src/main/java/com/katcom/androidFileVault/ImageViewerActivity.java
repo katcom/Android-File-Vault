@@ -9,7 +9,7 @@ public class ImageViewerActivity extends SingleFragmentActivity {
 
     @Override
     protected Fragment createFragment() {
-        ProtectedFile file= (ProtectedFile) getIntent().getSerializableExtra(EXTRA_FILE);
+        ProtectedFile file= (ProtectedFile) getIntent().getParcelableExtra(EXTRA_FILE);
 
         return ImageViewerFragment.newInstance(file);
     }

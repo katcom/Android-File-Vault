@@ -2,6 +2,7 @@ package com.katcom.androidFileVault;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
@@ -34,7 +35,7 @@ public class ImageViewerFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_image_viewer, container, false);
         setHasOptionsMenu(true);
 
-        mFile = (ProtectedFile) getArguments().getSerializable(ARG_FILE);
+        mFile = (ProtectedFile) getArguments().getParcelable(ARG_FILE);
 
         //String imgPath = getImagePath();
         //String imgName = getImageName();
@@ -42,7 +43,9 @@ public class ImageViewerFragment extends Fragment {
         String imgName = mFile.getFilename();
 
         mImageView = view.findViewById(R.id.fragment_image_viwer_image_view); // Bind the controller to the image view in the layout
-        mImageView.setImageBitmap(Utils.getScaledBitmap(getContext(), imgPath, 700, 700));
+
+        Bitmap img = getImage(mFile);
+        mImageView.setImageBitmap(FileManager.get(getContext()).getPreview(mFile,700,700));
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -50,6 +53,10 @@ public class ImageViewerFragment extends Fragment {
 
         // Create the AlertDialog object and return it
         return view;
+    }
+
+    private Bitmap getImage(ProtectedFile mFile) {
+        return null;
     }
 
     /*/private String getImagePath() {
@@ -64,7 +71,7 @@ public class ImageViewerFragment extends Fragment {
 
     public static ImageViewerFragment newInstance(ProtectedFile file) {
         Bundle args = new Bundle();
-        args.putSerializable(ARG_FILE, file);
+        args.putParcelable(ARG_FILE, file);
 
         ImageViewerFragment fragment = new ImageViewerFragment();
         fragment.setArguments(args);
@@ -112,14 +119,8 @@ public class ImageViewerFragment extends Fragment {
         FileManager vault = FileManager.get(getContext());
         try {
             vault.exportFile(mFile,getContext().getContentResolver().openOutputStream(uri));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (UnrecoverableEntryException e) {
-            e.printStackTrace();
+        } catch (FileNotFoundException | NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e) {
+            Log.e(TAG,e.toString());
         }
 
     }

@@ -6,12 +6,14 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.loader.content.AsyncTaskLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -34,6 +36,9 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
@@ -54,6 +59,7 @@ public class VaultFragment extends Fragment {
     private int currentModeIndex = 0;
     private final String DIALOG_IMAGE_TAG = "DialogImage";
     private final String TAG="VaultFragment";
+    private List<ProtectedFile> mFiles;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,9 +99,14 @@ public class VaultFragment extends Fragment {
         // Get a instance of the FileVault object
         mVault = FileManager.get(this.getContext());
 
+        mFiles = mVault.getFiles();
+
+
         //  Set the preview mode, by default small preview
         mPreviewMode = PreviewMode.PREVIEW_SMALL;
-        updateUI();
+        loadPreviewData();
+
+        //updateUI();
 
         // Setup the zoom-in and zoom-out button
         mZoomInButton = view.findViewById(R.id.button_zoom_in);
@@ -114,7 +125,7 @@ public class VaultFragment extends Fragment {
             }
         });
 
-
+        Log.i(TAG,"Create Vault View");
         return view;
     }
 
@@ -140,6 +151,7 @@ public class VaultFragment extends Fragment {
             mPreviewMode = modes.get(currentModeIndex);
         }
         updateUI();
+        //new FetchPreviewImage().execute(60);
     }
 
     /*
@@ -163,28 +175,22 @@ public class VaultFragment extends Fragment {
      * Update the recylerview according to the preview mode
      */
     private void updateUI() {
-        List<ProtectedFile> files = mVault.getFiles();
+
         switch (mPreviewMode) {
             case PreviewMode.FILE_DETAIL:
-                showFileDetail(files);
+                showFileDetail(mFiles);
                 break;
             case PreviewMode.PREVIEW_SMALL:
-                showSmallPreview(files);
+                showSmallPreview(mFiles);
                 break;
             case PreviewMode.PREVIEW_MEDIUM:
-                showMediumPreview(files);
+                showMediumPreview(mFiles);
                 break;
             case PreviewMode.PREVIEW_BIG:
-                showBigPreview(files);
+                showBigPreview(mFiles);
                 break;
         }
         currentModeIndex = modes.indexOf(mPreviewMode);
-
-        /* original code
-        List<ProtectedFile> files = mVault.getFiles();
-        mAdapter = new FileAdapterFileDetail(files);
-        mFileRecyclerView.setAdapter(mAdapter);
-        */
     }
 
     /**
@@ -321,8 +327,11 @@ public class VaultFragment extends Fragment {
                 Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
 
                 updateUI();
+                //FetchSinglePreviewImage.execute();
             } catch (FileNotFoundException e) {
                 Log.e(TAG,e.toString());
+            } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -335,4 +344,44 @@ public class VaultFragment extends Fragment {
     protected void showHelpInfo(){
         boolean has = mVault.hasPrivateKey();
     }
+
+    private void loadPreviewData(){
+        new FetchPreviewImage().execute(0);
+    }
+
+    private class FetchPreviewImage extends AsyncTask<Integer,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            int size = integers[0];
+            for(ProtectedFile file:mFiles){
+                Bitmap preview = mVault.getPreview(file,120,120);
+                file.setPreview(preview);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            updateUI();
+        }
+    }
+
+    private class FetchSinglePreviewImage extends AsyncTask<ProtectedFile,Void,Void>{
+
+        @Override
+        protected Void doInBackground(ProtectedFile... protectedFiles) {
+            ProtectedFile file = protectedFiles[0];
+            Bitmap preview = mVault.getPreview(file,120,120);
+            file.setPreview(preview);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            updateUI();
+        }
+    }
 }
+
+

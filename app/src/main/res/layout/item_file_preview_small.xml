@@ -10,7 +10,7 @@
     <ImageView
         android:id="@+id/file_preview_small_image_view"
         android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_height="@dimen/small_preview_image_size"
         android:src="@drawable/ic_launcher_background"
         />
     <TextView

@@ -12,4 +12,6 @@ public abstract class ItemViewHolder<T> extends RecyclerView.ViewHolder{
     }
 
     public abstract void bindViewData(T data, Context context);
+
+
 }

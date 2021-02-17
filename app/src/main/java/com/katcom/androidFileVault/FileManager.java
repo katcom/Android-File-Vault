@@ -21,6 +21,7 @@ import com.katcom.androidFileVault.SecureSharePreference.SecureSharePreference;
 import com.katcom.androidFileVault.login.Login;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -117,12 +118,16 @@ public class FileManager{
         if(!vaultFolder.exists()){
             vaultFolder.mkdirs();
         }
+
         mFiles = new ArrayList<ProtectedFile>();
         String[] files = vaultFolder.list();
 
         for(String filename: files){
             String path = mContext.getFilesDir() + "/" + sVaultDirectory +"/" + filename;
             ProtectedFile file = new ProtectedFile(filename,path,UUID.randomUUID());
+
+            int size = mContext.getResources().getDimensionPixelSize(R.dimen.small_preview_image_size);
+            //file.setPreview(getPreview(file,size,size));
             mFiles.add(file);
         }
     }
@@ -172,7 +177,21 @@ public class FileManager{
 
         try {
             CipherInputStream in = getDecryptedInputStream(file.getFilepath());
-            bitmap = BitmapFactory.decodeStream(in);
+            ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+
+            int i=0;
+            byte[] buffer = new byte[1024];
+            while (true) {
+                try {
+                    if (!((i = in.read(buffer)) != -1)) break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                out.write(buffer, 0, i);
+            }
+            byte[] image = out.toByteArray();
+            bitmap = Utils.getScaledBitmap(mContext,image,sizeX,sizeY);
+
             //in.close();
             return bitmap;
         } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | FileNotFoundException e) {
@@ -201,7 +220,7 @@ public class FileManager{
      * @param targetPath
      * @throws FileNotFoundException
      */
-    public void importFile(String filename,InputStream in, String targetPath) throws FileNotFoundException {
+    public void importFile(String filename,InputStream in, String targetPath) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
         importAndEncrypt(in,targetPath);
         addFileEntry(filename,targetPath);
     }
@@ -214,9 +233,9 @@ public class FileManager{
      * @param targetPath
      * @throws FileNotFoundException
      */
-    private void importAndEncrypt(InputStream in, String targetPath) throws FileNotFoundException {
+    private void importAndEncrypt(InputStream in, String targetPath) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
         OutputStream out=null;
-        out = getFileOutputStream(targetPath);
+        out = getEncryptedOutputStream(targetPath);
 
         writeFile(in,out);
     }
@@ -353,7 +372,7 @@ public class FileManager{
 
         String encodeIv = Base64.encodeToString(iv, Base64.DEFAULT);
         editor.putString(filePath,encodeIv);
-        editor.apply();
+        editor.commit();
     }
 
     /**
@@ -382,6 +401,7 @@ public class FileManager{
         CipherInputStream cin = null;
 
         FileInputStream in = new FileInputStream(filepath);
+
         SecretKey key =getSecretKey();
         byte[] encryptionIv = getEncryptionIv(filepath);
         Cipher cipher = getDecryptCipher(key,encryptionIv);

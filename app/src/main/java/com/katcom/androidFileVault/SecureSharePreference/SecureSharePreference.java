@@ -19,18 +19,14 @@ import java.util.Set;
 
 public class SecureSharePreference implements SharedPreferences {
     private static SharedPreferences share;
-    private static SecureSharePreference secretShare;
+    //private static SecureSharePreference secretShare;
     private SecureSharePreference(Context context,String name){
         share = context.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
     public static SecureSharePreference getInstance(Context context,String name){
-        if(secretShare == null){
-            secretShare = new SecureSharePreference(context,name);
-            return secretShare;
-        }
+            return new SecureSharePreference(context,name);
 
-        return secretShare;
     }
 
     @Override

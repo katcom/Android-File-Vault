@@ -1,19 +1,27 @@
 package com.katcom.androidFileVault;
 
+import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class ProtectedFile implements Serializable {
+public class ProtectedFile implements Parcelable {
     private String filename;
     private String filepath;
     private String type;
     private UUID id;
 
+    private Bitmap preview;
     public ProtectedFile(String filename,String filepath,UUID id){
         this.filename = filename;
         this.filepath = filepath;
         this.id = id;
     }
+
+
 
     ////////////////////////// Getter and Setter/////////////////////////////////////
     public UUID getId() {
@@ -44,6 +52,45 @@ public class ProtectedFile implements Serializable {
         this.type = type;
     }
 
+    public Bitmap getPreview() {
+        return preview;
+    }
+
+    public void setPreview(Bitmap preview) {
+        this.preview=preview;
+    }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(filename);
+        dest.writeString(filepath);
+        dest.writeString(type);
+        //dest.writeParcelable(preview, flags);
+
+    }
+
+    protected ProtectedFile(Parcel in) {
+        filename = in.readString();
+        filepath = in.readString();
+        type = in.readString();
+        //preview = in.readParcelable(Bitmap.class.getClassLoader());
+    }
+
+    public static final Creator<ProtectedFile> CREATOR = new Creator<ProtectedFile>() {
+        @Override
+        public ProtectedFile createFromParcel(Parcel in) {
+            return new ProtectedFile(in);
+        }
+
+        @Override
+        public ProtectedFile[] newArray(int size) {
+            return new ProtectedFile[size];
+        }
+    };
 }

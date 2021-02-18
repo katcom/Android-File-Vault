@@ -2,7 +2,7 @@ package com.katcom.androidFileVault;
 
 import android.content.Context;
 import android.content.Intent;
-
+import android.media.MediaFormat;
 public class SecureFileOpener implements FileOpener  {
     private Context mContext;
     private static SecureFileOpener mFileOpener;
@@ -54,4 +54,5 @@ public class SecureFileOpener implements FileOpener  {
     public void openBasedOnFileType(ProtectedFile file){
         openPicture(file);
     }
+
 }

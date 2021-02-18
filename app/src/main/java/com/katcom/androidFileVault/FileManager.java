@@ -17,20 +17,17 @@ import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.Log;
 
+import com.katcom.androidFileVault.CustomedCrypto.CustomCipherInputStream;
 import com.katcom.androidFileVault.SecureSharePreference.SecureSharePreference;
-import com.katcom.androidFileVault.login.Login;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -48,14 +45,12 @@ import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 
 public class FileManager{
     public static String TAG ="FileVault"; // For debug
@@ -176,24 +171,24 @@ public class FileManager{
         Bitmap bitmap;
 
         try {
-            CipherInputStream in = getDecryptedInputStream(file.getFilepath());
-            ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+            InputStream in = getDecryptedInputStream(file.getFilepath());
+            //ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in,null,options);
 
-            int i=0;
-            byte[] buffer = new byte[1024];
-            while (true) {
-                try {
-                    if (!((i = in.read(buffer)) != -1)) break;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                out.write(buffer, 0, i);
-            }
-            byte[] image = out.toByteArray();
-            bitmap = Utils.getScaledBitmap(mContext,image,sizeX,sizeY);
+            float srcWidth = options.outWidth;
+            float srcHeight = options.outHeight;
+            String message = "Width : " + srcWidth + " Height : " + srcHeight;
+            Log.i(TAG,message);
 
+            int inSampleSize = Utils.calculateInSampleSize(options,sizeX,sizeY);
+
+            options = new BitmapFactory.Options();
+            options.inSampleSize = inSampleSize;
+            in = getDecryptedInputStream(file);
             //in.close();
-            return bitmap;
+            return BitmapFactory.decodeStream(in,null,options);
         } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | FileNotFoundException e) {
             Log.e(TAG,e.toString());
         }
@@ -376,7 +371,7 @@ public class FileManager{
     }
 
     /**
-     *
+     * Get the Initial Vector (IV) from the persistent storage for decryption
      * @param filepath
      * @return
      */
@@ -389,28 +384,42 @@ public class FileManager{
     }
 
     /**
-     *
+     * Return the CustomCipherInputStream that reads the encrypted data and decrypted it on the fly.
      * @param filepath
-     * @return
+     * @return CipherInputStream that decrypts data on the fly
      * @throws UnrecoverableEntryException
      * @throws NoSuchAlgorithmException
      * @throws KeyStoreException
      * @throws FileNotFoundException
      */
-    public CipherInputStream getDecryptedInputStream(String filepath) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, FileNotFoundException {
-        CipherInputStream cin = null;
+    public CustomCipherInputStream getDecryptedInputStream(String filepath) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, FileNotFoundException {
+        CustomCipherInputStream cin = null;
 
         FileInputStream in = new FileInputStream(filepath);
 
         SecretKey key =getSecretKey();
         byte[] encryptionIv = getEncryptionIv(filepath);
         Cipher cipher = getDecryptCipher(key,encryptionIv);
-        cin = new CipherInputStream(in,cipher);
+        cin = new CustomCipherInputStream(in,cipher);
         return cin;
     }
 
     /**
-     *
+     * Return the CustomCipherInputStream that reads the encrypted data and decrypted it on the fly.
+     * Noted that the CustomCipherInputStream finishes the decryption when the close() method is called,
+     * which means that the encrypted data can be read only after the all the data is decrypted.
+     * @param file
+     * @return CipherInputStream that decrypts data on the fly
+     * @throws NoSuchAlgorithmException
+     * @throws FileNotFoundException
+     * @throws UnrecoverableEntryException
+     * @throws KeyStoreException
+     */
+    public CustomCipherInputStream getDecryptedInputStream(ProtectedFile file) throws NoSuchAlgorithmException, FileNotFoundException, UnrecoverableEntryException, KeyStoreException {
+        return getDecryptedInputStream(file.getFilepath());
+    }
+    /**
+     * Get an OutPutStream to a particular file
      * @param targetPath
      * @return
      * @throws FileNotFoundException
@@ -421,7 +430,7 @@ public class FileManager{
     };
 
     /**
-     *
+     * This method reads all the data from an InputStream and write them to the OutPutStream
      * @param in
      * @param out
      */
@@ -455,7 +464,7 @@ public class FileManager{
     }
 
     /**
-     *
+     * This method creates a jpg file, with current datetime as its file name
      * @return
      * @throws IOException
      */
@@ -476,6 +485,7 @@ public class FileManager{
     /**
      * This method generate a private in the keystore for encrypting and decrypting the files.
      * According to different version of Android, it uses different approaches to create private keys.
+     * Noted that now it only works on Android 6 and above
      */
     protected void generateKey(){
 
@@ -520,7 +530,9 @@ public class FileManager{
         }
     }
 
-
+    /**
+     * This method setup the keystore object to manage the private key
+     */
     private void setupKeyStore() {
         try {
             keystore = KeyStore.getInstance("AndroidKeyStore");
@@ -562,7 +574,7 @@ public class FileManager{
 
     /**
      * Test if the encryption works properly by encrypting a text and decrypting it,
-     * then the results are shown on the logcat
+     * then showing the results on the logcat
      */
     public void showEncryptTest() {
         SecretKey key = null;

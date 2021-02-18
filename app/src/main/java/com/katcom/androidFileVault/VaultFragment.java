@@ -2,7 +2,6 @@ package com.katcom.androidFileVault;
 
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -13,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.loader.content.AsyncTaskLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,8 +30,6 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 import com.katcom.androidFileVault.fileRecyclerView.FilePreviewAdapter;
 
-import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -142,8 +138,8 @@ public class VaultFragment extends Fragment {
     }
 
     /*
-        Change the preview mode to on fidelity lower, that is, to show smaller preview image than current mode does.
-        The lowest-fidelity is just showing the filename alone.
+        Change the preview mode to smaller, that is, to show smaller preview image than current mode does.
+        The lowest-fidelity is the one just showing the filename alone.
      */
     private void chooseSmallerItemLayout() {
         if (currentModeIndex > 0) {
@@ -151,7 +147,6 @@ public class VaultFragment extends Fragment {
             mPreviewMode = modes.get(currentModeIndex);
         }
         updateUI();
-        //new FetchPreviewImage().execute(60);
     }
 
     /*
@@ -165,11 +160,6 @@ public class VaultFragment extends Fragment {
         }
         updateUI();
     }
-
-    /*
-        This method copy the sample files from Asset to the private storage.
-     */
-
 
     /**
      * Update the recylerview according to the preview mode
@@ -249,6 +239,10 @@ public class VaultFragment extends Fragment {
         mFileRecyclerView.setLayoutManager(new GridLayoutManager(this.getContext(), columnsInGrid));
     }
 
+    /**
+     * Show a new activity to allow user to take photo.
+     * After the photo is taken, it would be stored in the vault
+     */
     public void takePhoto(){
         Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -256,18 +250,28 @@ public class VaultFragment extends Fragment {
             startActivityForResult(imageTakeIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
+
+    /**
+     * Create an menu on the vault fragment
+     * @param menu
+     * @param inflater
+     */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.export_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    /**
+     * The events that happens when an item on the menu is clicked
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_export_selected_files:
-                Intent i = new Intent(getActivity(),ExportActivity.class);
-                startActivity(i);
+                //exportMultipleFiles();
                 break;
             case R.id.menu_take_photo:
                 takePhoto();
@@ -277,6 +281,20 @@ public class VaultFragment extends Fragment {
         return true;
     }
 
+    /**
+     * This method allows user to select multiple files
+     */
+    private void exportMultipleFiles() {
+        Intent i = new Intent(getActivity(), ExportActivity.class);
+        startActivity(i);
+    }
+
+    /**
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(final int requestCode, final int resultCode, @Nullable final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -284,36 +302,60 @@ public class VaultFragment extends Fragment {
         if(resultCode != RESULT_OK) return;
 
         if(requestCode == REQUEST_FILE_CODE && data != null){
-            if(data.getClipData() != null) {
-                int count = data.getClipData().getItemCount();
-
-                for (int i = 0; i < count; i++) {
-                    Uri SelectedFile = data.getClipData().getItemAt(i).getUri();
-                    importAndEncryptFile(SelectedFile);
-                }
-            }else{
-                Uri selectedFile = data.getData();
-                importAndEncryptFile(selectedFile);
-            }
+            readSelectedFilesAndImport(data);
         }
         if(requestCode == REQUEST_IMAGE_CAPTURE){
-            Bundle extras = data.getExtras();
-            Bitmap image = (Bitmap)extras.get("data");
-
-            try {
-                saveImage(image);
-                updateUI();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            fetchPictureAndImport(data);
         }
     }
 
-    private void saveImage(Bitmap image) throws IOException {
-        mVault.importImage(image);
+    /**
+     * Get the picture user has taken, and import it to the vault
+     * @param data
+     */
+    private void fetchPictureAndImport(@Nullable Intent data) {
+        Bundle extras = data.getExtras();
+        Bitmap image = (Bitmap)extras.get("data");
 
+        try {
+            saveImage(image);
+            updateUI();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * Save into the vault a picture
+     * @param image
+     * @throws IOException
+     */
+    private void saveImage(Bitmap image) throws IOException {
+        mVault.importImage(image);
+    }
+
+    /**
+     * Fetch the URIs that point to the files user selected and import them to the vault.
+     * @param data
+     */
+    private void readSelectedFilesAndImport(@NonNull Intent data) {
+        if(data.getClipData() != null) {
+            int count = data.getClipData().getItemCount();
+
+            for (int i = 0; i < count; i++) {
+                Uri SelectedFile = data.getClipData().getItemAt(i).getUri();
+                importAndEncryptFile(SelectedFile);
+            }
+        }else{
+            Uri selectedFile = data.getData();
+            importAndEncryptFile(selectedFile);
+        }
+    }
+
+    /**
+     * Import a file from the give URI into the vault, and encrypt it.
+     * @param uri
+     */
     public void importAndEncryptFile(Uri uri) {
         ContentResolver contentResolver = getContext().getContentResolver();
         Cursor cursor = contentResolver.query(uri, null, null, null, null);
@@ -322,12 +364,20 @@ public class VaultFragment extends Fragment {
             String filename = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
             Log.v(TAG,filename);
             try {
-                String filepath = getContext().getFilesDir() +"/" + mVault.getVaultDirectory() + "/" + filename;
-                mVault.importFile(filename,contentResolver.openInputStream(uri),filepath);
+                // Specify where the file should go in the vault`
+                String targetPath = getContext().getFilesDir() +"/" + mVault.getVaultDirectory() + "/" + filename;
+
+                // Import it to the vault at the specified location
+                mVault.importFile(filename,contentResolver.openInputStream(uri),targetPath);
+
+                // Show a message to inform user about the file
                 Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
 
-                updateUI();
-                //FetchSinglePreviewImage.execute();
+                //get last file
+                ProtectedFile file = mFiles.get(mFiles.size()-1);
+
+                //updateUI();
+                new FetchSinglePreviewImage().execute(file);
             } catch (FileNotFoundException e) {
                 Log.e(TAG,e.toString());
             } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e) {
@@ -346,7 +396,9 @@ public class VaultFragment extends Fragment {
     }
 
     private void loadPreviewData(){
-        new FetchPreviewImage().execute(0);
+        for(ProtectedFile file:mFiles){
+            new FetchSinglePreviewImage().execute(file);
+        };
     }
 
     private class FetchPreviewImage extends AsyncTask<Integer,Void,Void>{

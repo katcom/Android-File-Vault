@@ -1,3 +1,6 @@
+/**
+ * This Activity shows an image on the screen
+ */
 package com.katcom.androidFileVault;
 
 import android.content.Context;

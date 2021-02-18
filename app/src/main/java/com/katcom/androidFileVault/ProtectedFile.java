@@ -1,4 +1,8 @@
 package com.katcom.androidFileVault;
+/**
+ * This class represents an encrypted file saved in the vault.
+ * The information about the file includes its name, path, type, an unique id and a preview picture saved as a bitmap
+ */
 
 import android.graphics.Bitmap;
 import android.os.Parcel;

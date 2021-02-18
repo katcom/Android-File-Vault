@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toolbar;
 
 import java.io.FileNotFoundException;
 import java.security.KeyStoreException;
@@ -37,37 +38,16 @@ public class ImageViewerFragment extends Fragment {
 
         mFile = (ProtectedFile) getArguments().getParcelable(ARG_FILE);
 
-        //String imgPath = getImagePath();
-        //String imgName = getImageName();
         String imgPath = mFile.getFilepath();
         String imgName = mFile.getFilename();
 
         mImageView = view.findViewById(R.id.fragment_image_viwer_image_view); // Bind the controller to the image view in the layout
 
-        Bitmap img = getImage(mFile);
         mImageView.setImageBitmap(FileManager.get(getContext()).getPreview(mFile,700,700));
 
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(view);
-
-        // Create the AlertDialog object and return it
+        getActivity().setTitle(imgName);
         return view;
     }
-
-    private Bitmap getImage(ProtectedFile mFile) {
-        return null;
-    }
-
-    /*/private String getImagePath() {
-        return (String) getArguments().getSerializable(ARG_FILE_PATH);
-    }*/
-
-    /*
-    private String getImageName(){
-        return (String) getArguments().getSerializable(ARG_FILE_NAME);
-    }
-    */
 
     public static ImageViewerFragment newInstance(ProtectedFile file) {
         Bundle args = new Bundle();

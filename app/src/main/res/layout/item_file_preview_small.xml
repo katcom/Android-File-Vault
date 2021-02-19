@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="100dp"
     android:layout_height="100dp"
+    xmlns:appNs="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:gravity="center">
 
@@ -11,7 +11,7 @@
         android:id="@+id/file_preview_small_image_view"
         android:layout_width="60dp"
         android:layout_height="@dimen/small_preview_image_size"
-        android:src="@drawable/ic_launcher_background"
+        appNs:src="@drawable/default_file_preview"
         />
     <TextView
         android:id="@+id/file_preview_filename_text_view"

@@ -1,11 +1,13 @@
 package com.katcom.androidFileVault;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -30,12 +32,18 @@ import android.widget.Toast;
 import com.google.android.material.navigation.NavigationView;
 import com.katcom.androidFileVault.fileRecyclerView.FilePreviewAdapter;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -56,6 +64,8 @@ public class VaultFragment extends Fragment {
     private final String DIALOG_IMAGE_TAG = "DialogImage";
     private final String TAG="VaultFragment";
     private List<ProtectedFile> mFiles;
+    private Uri tempPictureUir;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +112,7 @@ public class VaultFragment extends Fragment {
         mPreviewMode = PreviewMode.PREVIEW_SMALL;
         loadPreviewData();
 
-        //updateUI();
+        updateUI();
 
         // Setup the zoom-in and zoom-out button
         mZoomInButton = view.findViewById(R.id.button_zoom_in);
@@ -243,12 +253,37 @@ public class VaultFragment extends Fragment {
      * Show a new activity to allow user to take photo.
      * After the photo is taken, it would be stored in the vault
      */
-    public void takePhoto(){
+    public void takePhoto() {
         Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+        if (imageTakeIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            /*File photoFile = null;
+            try{
+                photoFile = createImageFile();
 
-        if(imageTakeIntent.resolveActivity(getActivity().getPackageManager()) != null){
-            startActivityForResult(imageTakeIntent, REQUEST_IMAGE_CAPTURE);
+            } catch (IOException e) {
+                Log.e(TAG,e.toString());
+            }*/
+
+                ContentValues values = new ContentValues ();
+
+                values.put (MediaStore.Images.Media.IS_PRIVATE, 1);
+                values.put (MediaStore.Images.Media.TITLE,new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) );
+                values.put (MediaStore.Images.Media.DESCRIPTION, "Secret File");
+
+                Uri picUri = getActivity ().getContentResolver ().insert (MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                saveTempPictureUri(picUri);
+
+                imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, picUri);
+                //Uri photoURI = Uri.fromFile(photoFile);
+                //imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(imageTakeIntent, REQUEST_IMAGE_CAPTURE);
         }
+    }
+
+    private void saveTempPictureUri(Uri uri) {
+        this.tempPictureUir = uri;
     }
 
     /**
@@ -314,24 +349,40 @@ public class VaultFragment extends Fragment {
      * @param data
      */
     private void fetchPictureAndImport(@Nullable Intent data) {
-        Bundle extras = data.getExtras();
-        Bitmap image = (Bitmap)extras.get("data");
+        Uri picUri;
+
+        if (data == null) {
+            picUri = getTempPicUri();
+        } else
+        {
+            Bundle extras = data.getExtras();
+            picUri = (Uri) extras.get (MediaStore.EXTRA_OUTPUT);
+        }
+
+        //Bundle extras = data.getExtras();
+        //Bitmap image = (Bitmap)extras.get("data");
+        //Uri picUri = (Uri) extras.get(MediaStore.EXTRA_OUTPUT);
 
         try {
-            saveImage(image);
-            updateUI();
+            //saveImage(image);
+            InputStream in = getActivity().getContentResolver().openInputStream(picUri);
+            File photoFile = createImageFile();
+            //mVault.importFile(photoFile,in);
+            new ImportTask(photoFile,in).execute();
+
+            //updateUI();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG,e.toString());
         }
+
+        // Delete the photo from external storage
+        int delete = getActivity().getContentResolver().delete(picUri,null,null);
+
+
     }
 
-    /**
-     * Save into the vault a picture
-     * @param image
-     * @throws IOException
-     */
-    private void saveImage(Bitmap image) throws IOException {
-        mVault.importImage(image);
+    private Uri getTempPicUri() {
+        return this.tempPictureUir;
     }
 
     /**
@@ -367,21 +418,21 @@ public class VaultFragment extends Fragment {
                 // Specify where the file should go in the vault`
                 String targetPath = getContext().getFilesDir() +"/" + mVault.getVaultDirectory() + "/" + filename;
 
+                File targetFile = new File(targetPath);
                 // Import it to the vault at the specified location
-                mVault.importFile(filename,contentResolver.openInputStream(uri),targetPath);
-
+                //mVault.importFile(targetFile,contentResolver.openInputStream(uri));
+                Executor executor = Executors.newSingleThreadExecutor();
+                new ImportTask(targetFile,contentResolver.openInputStream(uri)).executeOnExecutor(executor);
                 // Show a message to inform user about the file
                 Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
 
                 //get last file
-                ProtectedFile file = mFiles.get(mFiles.size()-1);
+                //ProtectedFile file = mFiles.get(mFiles.size()-1);
 
                 //updateUI();
-                new FetchSinglePreviewImage().execute(file);
+                //new FetchSinglePreviewImage().execute(file);
             } catch (FileNotFoundException e) {
                 Log.e(TAG,e.toString());
-            } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -396,8 +447,9 @@ public class VaultFragment extends Fragment {
     }
 
     private void loadPreviewData(){
+        Executor executor = Executors.newFixedThreadPool(15);
         for(ProtectedFile file:mFiles){
-            new FetchSinglePreviewImage().execute(file);
+            new FetchSinglePreviewImage().executeOnExecutor(executor,file);
         };
     }
 
@@ -424,7 +476,8 @@ public class VaultFragment extends Fragment {
         @Override
         protected Void doInBackground(ProtectedFile... protectedFiles) {
             ProtectedFile file = protectedFiles[0];
-            Bitmap preview = mVault.getPreview(file,120,120);
+            //Bitmap preview = mVault.getPreview(file,120,120);
+            Bitmap preview = new PreviewManager(getContext()).getPreview(file,120,120);
             file.setPreview(preview);
             return null;
         }
@@ -433,6 +486,53 @@ public class VaultFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             updateUI();
         }
+    }
+
+    private class ImportTask extends AsyncTask<Void,Void,Void>{
+        File file;
+        InputStream in;
+        public ImportTask(File file,InputStream in){
+            this.file = file;
+            this.in = in;
+        }
+        @Override
+        protected Void doInBackground(Void... mVoid) {
+            try {
+                mVault.importFile(file,in);
+            } catch (FileNotFoundException | UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException e) {
+                Log.e(TAG,e.toString());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            updateUI();
+            ProtectedFile protectedFile = mFiles.get(mFiles.size()-1);
+            //Bitmap preview = mVault.getPreview(file,120,120);
+
+            new FetchSinglePreviewImage().execute(protectedFile);
+        }
+    }
+
+    /**
+     * This method creates a jpg file, with current datetime as its file name
+     * @return
+     * @throws IOException
+     */
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = new File(getVaultDirectory());
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        return image;
     }
 }
 

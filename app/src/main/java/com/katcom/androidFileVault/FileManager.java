@@ -20,7 +20,6 @@ import android.util.Log;
 import com.katcom.androidFileVault.CustomedCrypto.CustomCipherInputStream;
 import com.katcom.androidFileVault.SecureSharePreference.SecureSharePreference;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,9 +36,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -127,75 +124,7 @@ public class FileManager{
         }
     }
 
-    /**
-     * Add an file entry given its file name and path
-     * @param filename the name of file
-     * @param filepath the path of the file in the vault
-     */
-    public void addFileEntry(String filename, String filepath){
-        ProtectedFile file = new ProtectedFile(filename,filepath,UUID.randomUUID());
-        mFiles.add(file);
-    }
-
-    /**
-     * Return the folder's name of the vault
-     * @return
-     */
-    public String getVaultDirectory(){
-        return sVaultDirectory;
-    }
-
-    /**
-     *  Get the preview picture of the given file based on its type
-     * @param file
-     * @param sizeX
-     * @param sizeY
-     * @return
-     */
-    public Bitmap getPreview(ProtectedFile file,int sizeX,int sizeY){
-        // Currently all the sample files are pictures, we just need to return the preview of pictures
-           return getPicturePreview(file,sizeX,sizeY);
-    }
-
-    /**
-     * This method returns a scaled thumbnail of a picture in form of a Bitmap,
-     * given the size of the container of the thumbnail picture.
-     * We need to make it run on the back ground for fast loading speed
-     * @param file
-     * @param sizeX
-     * @param sizeY
-     * @return
-     */
-    private Bitmap getPicturePreview(ProtectedFile file,int sizeX,int sizeY) {
-        //return Utils.getScaledBitmap(mContext,file.getFilepath(),sizeX,sizeY);
-        Bitmap bitmap;
-
-        try {
-            InputStream in = getDecryptedInputStream(file.getFilepath());
-            //ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeStream(in,null,options);
-
-            float srcWidth = options.outWidth;
-            float srcHeight = options.outHeight;
-            String message = "Width : " + srcWidth + " Height : " + srcHeight;
-            Log.i(TAG,message);
-
-            int inSampleSize = Utils.calculateInSampleSize(options,sizeX,sizeY);
-
-            options = new BitmapFactory.Options();
-            options.inSampleSize = inSampleSize;
-            in = getDecryptedInputStream(file);
-            //in.close();
-            return BitmapFactory.decodeStream(in,null,options);
-        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | FileNotFoundException e) {
-            Log.e(TAG,e.toString());
-        }
-
-        return null;
-    }
-
+    //****************** Start Import Functions ************************************//
     /** @deprecated
      * This method copy file directly from its original path to the vault.
      * @param filepath
@@ -203,21 +132,21 @@ public class FileManager{
      * @param filename
      */
     public void importFile(String filepath, String targetPath,String filename){
-       Utils.copyFile(filepath,targetPath);
-       addFileEntry(filename,targetPath);
+        Utils.copyFile(filepath,targetPath);
+        addFileEntry(filename,targetPath);
     }
 
     /**
      * This method read file from an InputStream to the vault, and encrypt the file when copying,
      * Also it creates an entry for this file.
-     * @param filename
+     *
+     * @param file
      * @param in
-     * @param targetPath
      * @throws FileNotFoundException
      */
-    public void importFile(String filename,InputStream in, String targetPath) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
-        importAndEncrypt(in,targetPath);
-        addFileEntry(filename,targetPath);
+    public void importFile(File file, InputStream in) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
+        importAndEncrypt(in,file.getPath());
+        addFileEntry(file.getName(),file.getPath());
     }
 
     /**
@@ -259,23 +188,18 @@ public class FileManager{
     }
 
     /**
-     * This method write an image object to the vault with encryption.
-     * @param image
-     * @throws IOException
+     * Add an file entry given its file name and path
+     * @param filename the name of file
+     * @param filepath the path of the file in the vault
      */
-    public void importImage(Bitmap image) throws IOException {
-        File outFile = createImageFile();
-        OutputStream out = null;
-        try {
-            out = new BufferedOutputStream(new FileOutputStream(outFile));
-            image.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.flush();
-
-            addFileEntry(outFile.getName(),outFile.getPath());
-        } finally {
-            out.close();
-        }
+    public void addFileEntry(String filename, String filepath){
+        ProtectedFile file = new ProtectedFile(filename,filepath,UUID.randomUUID());
+        mFiles.add(file);
     }
+    //********************** End Import Functions ******************************//
+
+
+    //********************** Start Export Functions **********************************//
 
     /**
      * Given an output stream, this method writes the particular file to the output stream,
@@ -287,13 +211,17 @@ public class FileManager{
      * @throws NoSuchAlgorithmException
      * @throws KeyStoreException
      */
-    public void exportFile(ProtectedFile file, OutputStream out) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
+    public void exportFile(ProtectedFile file, OutputStream out) throws FileNotFoundException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, IOException {
         //File outFile = new File(targetPath);
         InputStream in =null;
         in = getDecryptedInputStream(file.getFilepath());
 
         writeFile(in,out);
     }
+
+    //********************** End Export Functions ************************************//
+
+    //********************** Start Encrypt Functions *********************************//
 
     /**
      * Given a filepath, this method creates an OutputStream that can write data to this location and with encryption on the fly
@@ -327,29 +255,7 @@ public class FileManager{
 
             return cipher;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    /**
-     * This method returns a cipher object for decryption using AES-GCM with no padding
-     * @param secretKey
-     * @param encryptionIv
-     * @return cipher in Decrypt mode with AES_GCM algorithm
-     */
-    private Cipher getDecryptCipher(SecretKey secretKey,byte[] encryptionIv){
-        try {
-
-            final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            final GCMParameterSpec spec = new GCMParameterSpec(128, encryptionIv);
-
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
-
-            return cipher;
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
-            e.printStackTrace();
+            Log.e(TAG,e.toString());
         }
 
         return null;
@@ -370,15 +276,43 @@ public class FileManager{
         editor.commit();
     }
 
+    //************************* End Encrypt Functions  ************************************//
+
+
+    //************************* Start Decrypt Functions **********************************//
+    /**
+     * This method returns a cipher object for decryption using AES-GCM with no padding
+     * @param secretKey
+     * @param encryptionIv
+     * @return cipher in Decrypt mode with AES_GCM algorithm
+     */
+    private Cipher getDecryptCipher(SecretKey secretKey,byte[] encryptionIv){
+        try {
+
+            final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            final GCMParameterSpec spec = new GCMParameterSpec(128, encryptionIv);
+
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+
+            return cipher;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException | InvalidKeyException e) {
+            Log.e(TAG,e.toString());
+        }
+
+        return null;
+    }
+
     /**
      * Get the Initial Vector (IV) from the persistent storage for decryption
      * @param filepath
      * @return
      */
-    private byte[] getEncryptionIv(String filepath){
+    private byte[] getEncryptionIv(String filepath) throws IOException {
         SecureSharePreference secretShare = SecureSharePreference.getInstance(mContext, SHARE_PREFERENCE_TAG);
 
         String encodeIv = secretShare.getString(filepath,null);
+
+        if(encodeIv == null) throw new IOException("Cannot find encryption IV for the file: " +filepath);
         byte[] decodedArr = Base64.decode(encodeIv,Base64.DEFAULT);
         return decodedArr;
     }
@@ -392,7 +326,7 @@ public class FileManager{
      * @throws KeyStoreException
      * @throws FileNotFoundException
      */
-    public CustomCipherInputStream getDecryptedInputStream(String filepath) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, FileNotFoundException {
+    public CustomCipherInputStream getDecryptedInputStream(String filepath) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, FileNotFoundException, IOException {
         CustomCipherInputStream cin = null;
 
         FileInputStream in = new FileInputStream(filepath);
@@ -415,72 +349,13 @@ public class FileManager{
      * @throws UnrecoverableEntryException
      * @throws KeyStoreException
      */
-    public CustomCipherInputStream getDecryptedInputStream(ProtectedFile file) throws NoSuchAlgorithmException, FileNotFoundException, UnrecoverableEntryException, KeyStoreException {
+    public CustomCipherInputStream getDecryptedInputStream(ProtectedFile file) throws NoSuchAlgorithmException, FileNotFoundException, UnrecoverableEntryException, KeyStoreException, IOException {
         return getDecryptedInputStream(file.getFilepath());
     }
-    /**
-     * Get an OutPutStream to a particular file
-     * @param targetPath
-     * @return
-     * @throws FileNotFoundException
-     */
-    private OutputStream getFileOutputStream(String targetPath) throws FileNotFoundException {
-        return new FileOutputStream(targetPath);
+    //************************* End Decrypt Functions **********************************//
 
-    };
 
-    /**
-     * This method reads all the data from an InputStream and write them to the OutPutStream
-     * @param in
-     * @param out
-     */
-    private void writeFile(InputStream in, OutputStream out){
-        try {
-
-            byte[] buffer = new byte[1024];
-            int i;
-
-            int tot = 0;
-            while ((i = in.read(buffer)) != -1) {
-                tot += i;
-                out.write(buffer, 0, i);
-            }
-
-            Log.v(TAG,"File Length:"+tot);
-            out.flush();
-            out.close();
-            in.close();
-
-        } catch (IOException e) {
-            Log.e(TAG,e.toString());
-        } finally {
-            try{
-                if(out != null) out.close();
-                if(in != null) in.close();
-            }catch (IOException ioe){
-                ioe.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * This method creates a jpg file, with current datetime as its file name
-     * @return
-     * @throws IOException
-     */
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = new File(mContext.getFilesDir() +"/" +sVaultDirectory);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        return image;
-    }
+    //************************* Start Private Key Functions ****************************//
 
     /**
      * This method generate a private in the keystore for encrypting and decrypting the files.
@@ -538,7 +413,7 @@ public class FileManager{
             keystore = KeyStore.getInstance("AndroidKeyStore");
             keystore.load(null);
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-            e.printStackTrace();
+            Log.e(TAG,e.toString());
         }
     }
 
@@ -550,7 +425,7 @@ public class FileManager{
         try {
             return keystore.isKeyEntry(keyAlias);
         } catch (KeyStoreException e) {
-            e.printStackTrace();
+            Log.e(TAG,e.toString());
             return false;
         }
     }
@@ -571,6 +446,115 @@ public class FileManager{
 
         return secretKey;
     }
+
+    //************************* End Private Key Functions ***************************//
+
+    /**
+     * Return the folder's name of the vault
+     * @return
+     */
+    public String getVaultDirectory(){
+        return sVaultDirectory;
+    }
+
+    /**
+     *  Get the preview picture of the given file based on its type
+     * @param file
+     * @param sizeX
+     * @param sizeY
+     * @return
+     */
+    public Bitmap getPreview(ProtectedFile file,int sizeX,int sizeY){
+        // Currently all the sample files are pictures, we just need to return the preview of pictures
+           return getPicturePreview(file,sizeX,sizeY);
+    }
+
+    /**
+     * This method returns a scaled thumbnail of a picture in form of a Bitmap,
+     * given the size of the container of the thumbnail picture.
+     * We need to make it run on the back ground for fast loading speed
+     * @param file
+     * @param sizeX
+     * @param sizeY
+     * @return
+     */
+    private Bitmap getPicturePreview(ProtectedFile file,int sizeX,int sizeY) {
+        //return Utils.getScaledBitmap(mContext,file.getFilepath(),sizeX,sizeY);
+        Bitmap bitmap;
+
+        try {
+            InputStream in = getDecryptedInputStream(file.getFilepath());
+            //ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in,null,options);
+
+            float srcWidth = options.outWidth;
+            float srcHeight = options.outHeight;
+            String message = "Width : " + srcWidth + " Height : " + srcHeight;
+            Log.i(TAG,message);
+
+            int inSampleSize = Utils.calculateInSampleSize(options,sizeX,sizeY);
+
+            options = new BitmapFactory.Options();
+            options.inSampleSize = inSampleSize;
+            in = getDecryptedInputStream(file);
+            //in.close();
+            return BitmapFactory.decodeStream(in,null,options);
+        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
+            Log.e(TAG,e.toString());
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Get an OutPutStream to a particular file
+     * @param targetPath
+     * @return
+     * @throws FileNotFoundException
+     */
+    private OutputStream getFileOutputStream(String targetPath) throws FileNotFoundException {
+        return new FileOutputStream(targetPath);
+
+    };
+
+    /**
+     * This method reads all the data from an InputStream and write them to the OutPutStream
+     * @param in
+     * @param out
+     */
+    private void writeFile(InputStream in, OutputStream out){
+        try {
+
+            byte[] buffer = new byte[1024];
+            int i;
+
+            int tot = 0;
+            while ((i = in.read(buffer)) != -1) {
+                tot += i;
+                out.write(buffer, 0, i);
+            }
+
+            Log.v(TAG,"File Length:"+tot);
+            out.flush();
+            out.close();
+            in.close();
+
+        } catch (IOException e) {
+            Log.e(TAG,e.toString());
+        } finally {
+            try{
+                if(out != null) out.close();
+                if(in != null) in.close();
+            }catch (IOException ioe){
+                ioe.printStackTrace();
+            }
+        }
+    }
+
+
 
     /**
      * Test if the encryption works properly by encrypting a text and decrypting it,
@@ -594,7 +578,7 @@ public class FileManager{
             Log.v(tag,"Encrypted text:" + Base64.encodeToString(encryptedText,Base64.DEFAULT));
             Log.v(tag,"Decrypted text:" + new String(decryptedText, StandardCharsets.UTF_8));
 
-        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | BadPaddingException | IllegalBlockSizeException | IOException e) {
             Log.e(TAG,e.toString());
         }
 

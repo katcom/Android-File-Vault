@@ -49,7 +49,15 @@ public class PreviewManager {
                 options.inSampleSize = inSampleSize;
                 in = vault.getDecryptedInputStream(file);
                 //in.close();
-                return BitmapFactory.decodeStream(in,null,options);
+                Bitmap preview = BitmapFactory.decodeStream(in,null,options);
+
+                // If loading with options succeed, return the image
+                if(preview != null) return preview;
+
+                // If failed to load the image with options, drop the options and load it again
+                in = vault.getDecryptedInputStream(file);
+                return BitmapFactory.decodeStream(in);
+
             } catch (UnrecoverableEntryException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
                 Log.e(TAG,e.toString());
             }

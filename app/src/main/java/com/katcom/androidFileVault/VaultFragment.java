@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -27,6 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -43,7 +45,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -65,6 +71,7 @@ public class VaultFragment extends Fragment {
     private final String TAG="VaultFragment";
     private List<ProtectedFile> mFiles;
     private Uri tempPictureUir;
+    private PreviewManager previewManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,8 +115,13 @@ public class VaultFragment extends Fragment {
         mFiles = mVault.getFiles();
 
 
+        // Create a PreviewManager to load preview of files
+        previewManager = new PreviewManager(getContext());
+
         //  Set the preview mode, by default small preview
         mPreviewMode = PreviewMode.PREVIEW_SMALL;
+
+        // Start loading preview
         loadPreviewData();
 
         updateUI();
@@ -130,6 +142,8 @@ public class VaultFragment extends Fragment {
                 chooseSmallerItemLayout();  // show lower-fidelity preview image
             }
         });
+
+
 
         Log.i(TAG,"Create Vault View");
         return view;
@@ -284,6 +298,36 @@ public class VaultFragment extends Fragment {
 
     private void saveTempPictureUri(Uri uri) {
         this.tempPictureUir = uri;
+    }
+
+    /**
+     * This methods loads preview image of each file on the background;
+     */
+    private void loadPreviewData(){
+
+        Executor executor = getCacheExecutor();
+
+        for(ProtectedFile file:mFiles){
+            /*Log.v(TAG,"LOADING PREVIEW"+file.getFilename());
+            Bitmap preview = previewManager.getPreview(file,120,120);
+            file.setPreview(preview);
+            if(file.getPreview() != null){
+                Log.v(TAG,"Done Loading preview on background for : "+file.getFilename());
+            }else{
+                Log.v(TAG,"Failed Loading preview on background for : "+file.getFilename());
+            }**/
+            new FetchSinglePreviewImage().executeOnExecutor(executor,file);
+        };
+    }
+
+    /**
+     * This method returns a Executor that provides 15 threads to do things on the background.
+     * @return
+     */
+    private ExecutorService getCacheExecutor() {
+        return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                120L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
     }
 
     /**
@@ -446,12 +490,7 @@ public class VaultFragment extends Fragment {
         boolean has = mVault.hasPrivateKey();
     }
 
-    private void loadPreviewData(){
-        Executor executor = Executors.newFixedThreadPool(15);
-        for(ProtectedFile file:mFiles){
-            new FetchSinglePreviewImage().executeOnExecutor(executor,file);
-        };
-    }
+
 
     private class FetchPreviewImage extends AsyncTask<Integer,Void,Void>{
 
@@ -471,19 +510,25 @@ public class VaultFragment extends Fragment {
         }
     }
 
-    private class FetchSinglePreviewImage extends AsyncTask<ProtectedFile,Void,Void>{
+    private class FetchSinglePreviewImage extends AsyncTask<ProtectedFile,Void,ProtectedFile>{
 
         @Override
-        protected Void doInBackground(ProtectedFile... protectedFiles) {
+        protected ProtectedFile doInBackground(ProtectedFile... protectedFiles) {
             ProtectedFile file = protectedFiles[0];
             //Bitmap preview = mVault.getPreview(file,120,120);
-            Bitmap preview = new PreviewManager(getContext()).getPreview(file,120,120);
-            file.setPreview(preview);
-            return null;
+            Log.v(TAG,"Loading preview on background for : "+file.getFilename());
+            Bitmap preview = previewManager.getPreview(file,120,120);
+            
+            return file;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(ProtectedFile file) {
+            if(file.getPreview() != null){
+                Log.v(TAG,"Done Loading preview on background for : "+file.getFilename());
+            }else{
+                Log.v(TAG,"Failed Loading preview on background for : "+file.getFilename());
+            }
             updateUI();
         }
     }

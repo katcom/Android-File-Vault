@@ -1,6 +1,7 @@
 package com.katcom.androidFileVault.fileRecyclerView.previewHolders;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,7 +28,10 @@ public class SmallPreviewHolder extends ItemViewHolder<ProtectedFile> {
     public void bindViewData(final ProtectedFile file, final Context context) {
         mFileTextView.setText(file.getFilename());   // Bind the file name to the user interface
         //mImageView.setImageBitmap(FileManager.get(context).getPreview(file,60,60)); // Bind the preview image to the user interface
-        if(file.getPreview() != null) mImageView.setImageBitmap(file.getPreview());
+        if(file.getPreview() != null){
+            mImageView.setImageBitmap(file.getPreview());
+        }
+
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

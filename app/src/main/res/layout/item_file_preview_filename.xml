@@ -13,10 +13,11 @@
         android:src="@drawable/ic_stat_name"/>
     <TextView
         android:id="@+id/file_preview_filename_name_text_view"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:textSize="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:textSize="15dp"
         android:ellipsize="middle"
-        android:text="TextView"
+        android:singleLine="true"
+        android:text="ExampleFile.fileExampleFile.fileExampleFile.fileExampleFile.fileExampleFile.file"
         />
 </LinearLayout>

@@ -1,6 +1,6 @@
 # Android File Vault
 ## An App that hides files
-It is an application that help users hides files on android devices. 
+It is an application that help users hides files on android devices. The app is password-protected and all files imported into the app are encrypted with AES-256.
 
 
 ## TODO List

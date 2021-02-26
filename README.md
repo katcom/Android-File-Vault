@@ -25,18 +25,18 @@ Noted in this stage of development, please only commit your code to the **dev** 
 
 ## Things to do
 These are tasks we aim to complete in this course.
-- [ ] Understand the code written by Ludwig
-- [ ] Display Files with content
-- [ ] Login verification
-- [ ] Import Files
-- [ ] Export Files
-- [ ] Encrypt Files
-- [ ] Decrypt Files
-- [ ] Import & Encrypt Files
-- [ ] Export & Decrypt Files
+- [X] Understand the code written by Ludwig
+- [X] Display Files with content
+- [X] Login verification
+- [X] Import Files
+- [X] Export Files
+- [X] Encrypt Files
+- [X] Decrypt Files
+- [X] Import & Encrypt Files
+- [X] Export & Decrypt Files
 - [ ] Share Encrypt Compressed Files
 - [ ] Open Files with Three Party Apps
-- [ ] Take Photo inside the Vault
+- [X] Take Photo inside the Vault
 - [ ] Record Audio inside the Vault
 - [ ] Unit Testing of all Modules.
 

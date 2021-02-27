@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">图库与隐私</string>
+    <string name="vault_1_button">打开文件库</string>
+    <string name="export_selected_file">导出所选文件</string>
+    <string name="share_file">分享文件</string>
+    <string name="export_all_files">打包导出所有文件</string>
+    <string name="share_all_files">分享所有文件</string>
+    <string name="latest">最近</string>
+    <string name="star">喜爱的</string>
+    <string name="login">登录</string>
+    <string name="password_hint">请输入密码</string>
+    <string name="please_set_password">请输入一个登录密码</string>
+    <string name="next_move_set_password">下一步</string>
+    <string name="previous_move_set_password">上一步</string>
+    <string name="two_password_not_match">两次输入的密码不匹配，请重新输入</string>
+    <string name="two_password_not_match_title">密码不正确</string>
+    <string name="enter_password_again">再次输入</string>
+    <string name="search">搜索</string>
+    <string name="clear_search">清除</string>
+    <string name="string_export">导出</string>
+    <string name="string_share">分享</string>
+    <string name="take_photo">拍照</string>
+
+</resources>

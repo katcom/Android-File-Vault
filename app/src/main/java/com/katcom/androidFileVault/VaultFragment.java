@@ -305,18 +305,18 @@ public class VaultFragment extends Fragment {
      */
     private void loadPreviewData(){
 
-        Executor executor = getCacheExecutor();
+        //Executor executor = Executors.newFixedThreadPool(30);
 
         for(ProtectedFile file:mFiles){
-            /*Log.v(TAG,"LOADING PREVIEW"+file.getFilename());
+            Log.v(TAG,"LOADING PREVIEW"+file.getFilename());
             Bitmap preview = previewManager.getPreview(file,120,120);
             file.setPreview(preview);
             if(file.getPreview() != null){
                 Log.v(TAG,"Done Loading preview on background for : "+file.getFilename());
             }else{
                 Log.v(TAG,"Failed Loading preview on background for : "+file.getFilename());
-            }**/
-            new FetchSinglePreviewImage().executeOnExecutor(executor,file);
+            }
+            //new FetchSinglePreviewImage().executeOnExecutor(executor,file);
         };
     }
 
@@ -518,7 +518,7 @@ public class VaultFragment extends Fragment {
             //Bitmap preview = mVault.getPreview(file,120,120);
             Log.v(TAG,"Loading preview on background for : "+file.getFilename());
             Bitmap preview = previewManager.getPreview(file,120,120);
-            
+
             return file;
         }
 

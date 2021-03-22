@@ -96,7 +96,13 @@ public class ImageViewerFragment extends Fragment {
         intent.putExtra(Intent.EXTRA_TITLE, mFile.getFilename());
         startActivityForResult(intent, WRITE_REQUEST_CODE);
     }
-
+    private void share() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_TITLE, mFile.getFilename());
+        startActivityForResult(intent, WRITE_REQUEST_CODE);
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == WRITE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {

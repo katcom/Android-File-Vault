@@ -6,8 +6,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AlertDialog;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,12 +19,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toolbar;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
@@ -34,6 +35,7 @@ public class ImageViewerFragment extends Fragment {
     private static final String ARG_FILE = "file";
     private static final String TAG = "ImageViewer";
 
+    FileManager vault = FileManager.get(getContext());
     private ImageView mImageView;
     private ProtectedFile mFile;
     private int WRITE_REQUEST_CODE = 0;
@@ -85,6 +87,9 @@ public class ImageViewerFragment extends Fragment {
             case R.id.menu_image_viewer_export:
                 export();
                 break;
+            case R.id.menu_image_viewer_share:
+                share();
+                break;
         }
         return true;
     }
@@ -97,11 +102,22 @@ public class ImageViewerFragment extends Fragment {
         startActivityForResult(intent, WRITE_REQUEST_CODE);
     }
     private void share() {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_TITLE, mFile.getFilename());
-        startActivityForResult(intent, WRITE_REQUEST_CODE);
+        new ShareImageTask().executeOnExecutor(executor,mFile);
+
+    }
+    private void shareImage(Uri fileUri) {
+        Intent shareIntent = createShareImageIntent(fileUri);
+
+        startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+    }
+    private Intent createShareImageIntent(Uri uriToImage){
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uriToImage);
+        shareIntent.setType("image/jpeg");
+        shareIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        shareIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        return shareIntent;
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -116,7 +132,6 @@ public class ImageViewerFragment extends Fragment {
     }
 
     private void export(Uri uri) {
-        FileManager vault = FileManager.get(getContext());
         try {
             vault.exportFile(mFile,getContext().getContentResolver().openOutputStream(uri));
         } catch (NoSuchAlgorithmException | KeyStoreException | UnrecoverableEntryException  | IOException e) {
@@ -140,6 +155,36 @@ public class ImageViewerFragment extends Fragment {
             updateUI();
         }
     }
+
+    private class ShareImageTask extends AsyncTask<ProtectedFile,Void,Void> {
+        File file;
+        InputStream in;
+        Uri fileUri;
+        @Override
+        protected Void doInBackground(ProtectedFile... files) {
+            file = vault.createSharedFile(mFile);
+            try {
+                OutputStream out = new FileOutputStream(file);
+
+                vault.exportFile(mFile,out);;
+            } catch (IOException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
+                Log.v(TAG,e.toString());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            fileUri = FileProvider.getUriForFile(
+                    getContext(),
+                    BuildConfig.APPLICATION_ID+".fileprovider",
+                    file);
+            shareImage(fileUri);
+            Log.v(TAG,"Shared File Created");
+        }
+    }
+
 
     private void updateUI() {
         mProgressBar.setVisibility(View.GONE);

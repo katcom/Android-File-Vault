@@ -23,5 +23,6 @@
     <string name="string_export">export</string>
     <string name="string_share">share</string>
     <string name="take_photo">Take Photo</string>
+    <string name="send_to">Send To</string>
 
 </resources>

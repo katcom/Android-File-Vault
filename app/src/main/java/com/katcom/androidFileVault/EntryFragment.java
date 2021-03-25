@@ -46,6 +46,7 @@ public class EntryFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 openVault();
+                //testOpenVault();
             }
         });
 
@@ -59,6 +60,7 @@ public class EntryFragment extends Fragment {
      * Otherwise, shows the screen where user can login by entering the password.
      */
     private void openVault() {
+
         if(!hasPassword()){
             // Launch activity to setup password
             setPassword();
@@ -72,6 +74,12 @@ public class EntryFragment extends Fragment {
             Intent i= new Intent(this.getContext(), LoginActivity.class);
             startActivity(i);
         }
+    }
+
+    // Testing only
+    private void testOpenVault(){
+        Intent intent= new Intent(this.getContext(), VaultActivity.class);
+        startActivity(intent);
     }
 
     /**

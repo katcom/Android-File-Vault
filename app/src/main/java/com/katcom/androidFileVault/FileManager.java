@@ -50,6 +50,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
 public class FileManager{
+    private static final String sSharedFolderPath = "sharedFiles";
     public static String TAG ="FileVault"; // For debug
     public static String sVaultDirectory = "FileVaultOne";  // The directory of the vault in the private storage of this app
     private static FileManager sVault;    // This class is a singleton, only one instance allowed
@@ -219,6 +220,22 @@ public class FileManager{
         writeFile(in,out);
     }
 
+    public void exportSharedFile(ProtectedFile file) throws IOException, NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
+
+        File sharedFile = createSharedFile(file);
+
+        OutputStream out = getFileOutputStream(sharedFile.getPath());
+        exportFile(file,out);
+    }
+
+    public File createSharedFile(ProtectedFile file){
+        String tempFileLocation = mContext.getCacheDir() + "/"+getSharedFolderPath()+"/" + file.getFilename();
+        File tempFile = new File(tempFileLocation);
+        if(!tempFile.getParentFile().exists()){
+            tempFile.getParentFile().mkdir();
+        }
+        return tempFile;
+    }
     //********************** End Export Functions ************************************//
 
     //********************** Start Encrypt Functions *********************************//
@@ -554,6 +571,9 @@ public class FileManager{
         }
     }
 
+    private String getSharedFolderPath(){
+        return this.sSharedFolderPath;
+    }
 
 
     /**

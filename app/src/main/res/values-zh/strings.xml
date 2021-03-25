@@ -10,7 +10,7 @@
     <string name="star">喜爱的</string>
     <string name="login">登录</string>
     <string name="password_hint">请输入密码</string>
-    <string name="please_set_password">请输入一个登录密码</string>
+    <string name="please_set_password">请设置登录密码</string>
     <string name="next_move_set_password">下一步</string>
     <string name="previous_move_set_password">上一步</string>
     <string name="two_password_not_match">两次输入的密码不匹配，请重新输入</string>
@@ -21,5 +21,6 @@
     <string name="string_export">导出</string>
     <string name="string_share">分享</string>
     <string name="take_photo">拍照</string>
+    <string name="send_to">发送</string>
 
 </resources>

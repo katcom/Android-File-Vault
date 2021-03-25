@@ -9,4 +9,5 @@
         android:id="@+id/menu_image_viewer_share"
         android:icon="@drawable/ic_share"
         app:showAsAction="always"/>
+
 </menu>

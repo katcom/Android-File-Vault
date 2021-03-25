@@ -1,7 +1,9 @@
 package com.katcom.androidFileVault;
 
+import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -96,10 +98,14 @@ public class VaultFragment extends Fragment {
                         showChooseFileActivity();
                         break;
                     case R.id.action_help:
-                        showHelpInfo();
+                        //showHelpInfo();
                         break;
                     case R.id.action_about:
-                        showEncryptTest();
+                        //showEncryptTest();
+                        break;
+                    case R.id.action_exit:
+                        endApplication();
+                        break;
                 }
                 return false;
             }
@@ -305,18 +311,19 @@ public class VaultFragment extends Fragment {
      */
     private void loadPreviewData(){
 
-        //Executor executor = Executors.newFixedThreadPool(30);
+        Executor executor = Executors.newFixedThreadPool(30);
 
         for(ProtectedFile file:mFiles){
             Log.v(TAG,"LOADING PREVIEW"+file.getFilename());
-            Bitmap preview = previewManager.getPreview(file,120,120);
-            file.setPreview(preview);
-            if(file.getPreview() != null){
+            //Bitmap preview = previewManager.getPreview(file,120,120);
+            //file.setPreview(preview);
+            new FetchSinglePreviewImage().executeOnExecutor(executor,file);
+
+            /*if(file.getPreview() != null){
                 Log.v(TAG,"Done Loading preview on background for : "+file.getFilename());
             }else{
                 Log.v(TAG,"Failed Loading preview on background for : "+file.getFilename());
-            }
-            //new FetchSinglePreviewImage().executeOnExecutor(executor,file);
+            }*/
         };
     }
 
@@ -355,7 +362,6 @@ public class VaultFragment extends Fragment {
             case R.id.menu_take_photo:
                 takePhoto();
                 break;
-
         }
         return true;
     }
@@ -490,7 +496,10 @@ public class VaultFragment extends Fragment {
         boolean has = mVault.hasPrivateKey();
     }
 
-
+    // Send a broadcast to close all activities
+    private void endApplication(){
+        getContext().sendBroadcast(new Intent(CloseReceiver.CLOSE_INTENT));
+    }
 
     private class FetchPreviewImage extends AsyncTask<Integer,Void,Void>{
 
@@ -518,7 +527,7 @@ public class VaultFragment extends Fragment {
             //Bitmap preview = mVault.getPreview(file,120,120);
             Log.v(TAG,"Loading preview on background for : "+file.getFilename());
             Bitmap preview = previewManager.getPreview(file,120,120);
-
+            file.setPreview(preview);
             return file;
         }
 
@@ -579,6 +588,10 @@ public class VaultFragment extends Fragment {
 
         return image;
     }
+
+
+
+
 }
 
 

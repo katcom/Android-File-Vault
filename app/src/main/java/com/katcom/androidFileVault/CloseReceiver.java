@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
- * Close the app by killing all activities using broadcast
+ * This broadcast receiver is used to close the app by killing all activities using broadcast
  * Ref:https://blog.csdn.net/totond/article/details/72960211
  */
 public class CloseReceiver extends BroadcastReceiver {

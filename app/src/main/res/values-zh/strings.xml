@@ -23,4 +23,15 @@
     <string name="take_photo">拍照</string>
     <string name="send_to">发送</string>
 
+    <!--设置-->
+    <string name="small_font_size">正常</string>
+    <string name="big_font_size">大</string>
+
+    <!--抽屉-->
+    <string name="import_files">导入</string>
+    <string name="setting">设置</string>
+    <string name="help">帮助</string>
+    <string name="about">关于本APP</string>
+    <string name="exit_vault">退出文件库</string>
+
 </resources>

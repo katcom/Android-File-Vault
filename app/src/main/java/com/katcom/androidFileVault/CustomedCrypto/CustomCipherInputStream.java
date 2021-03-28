@@ -71,6 +71,12 @@ import javax.crypto.ShortBufferException;
  * @since 1.4
  */
 
+/**
+ * The CipherInputStream has been overwritten in this project because the original Cipher
+ * because the buffer size in the original implementation is simply 512 bytes
+ * which significantly slows down the encryption. The buffer is changed to be 8192 bytes long
+ * so that the encryption would work faster.
+ */
 public class CustomCipherInputStream extends FilterInputStream {
 
     // the cipher engine to use to process stream data

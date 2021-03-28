@@ -30,6 +30,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'net.zetetic:android-database-sqlcipher:4.4.2@aar'
     implementation "androidx.sqlite:sqlite:2.0.1"
+    implementation "androidx.preference:preference:1.1.1"
 
     implementation 'commons-codec:commons-codec:1.15'
 }

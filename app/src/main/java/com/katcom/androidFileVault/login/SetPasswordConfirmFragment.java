@@ -28,15 +28,22 @@ import static com.katcom.androidFileVault.utils.PasswordHelper.getPasswordHash;
 
 public class SetPasswordConfirmFragment extends Fragment implements Login {
     private static final String ARG_FIRST_PASS_HASH = "first_password_hash_code";
-    private Button mPreviousButton;
-    private Button mFinishButton;
-    private TextView mPasswordTextView;
-    private String firstPasswordHash;
-    private String secondPasswordHash;
+    private Button mPreviousButton;     // Button to go back to the first step
+    private Button mFinishButton;       // Confirm the password setting
+    private TextView mPasswordTextView;     // Show the password entered
+    private String firstPasswordHash;       // Record of the password entered for the first time
+    private String secondPasswordHash;      // Record of the second password
 
+    /*
+        Use newInstance() method to initialize this fragment.
+        To instantiate this fragment, you needs the password user entered for the first time
+        as a parameter.
+        Hence this empty and private constructor.
+     */
     private SetPasswordConfirmFragment(){
-
+        // Empty Constructor
     }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

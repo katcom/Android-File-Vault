@@ -36,4 +36,9 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(closeReceiver);
+    }
 }

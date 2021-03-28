@@ -1,9 +1,6 @@
 <resources>
-    <string name="app_name">AndroidFileVault</string>
+    <string name="app_name">Android File Vault</string>
     <string name="vault_1_button">Open Vault</string>
-    <string name="vault_2_button">Vault 2</string>
-    <string name="vault_3_button">Vault 3</string>
-    <string name="vault_4_button">Vault 4</string>
     <string name="export_selected_file">Export Selected Files</string>
     <string name="share_file">Share Files</string>
     <string name="export_all_files">Export All Files</string>
@@ -24,5 +21,16 @@
     <string name="string_share">share</string>
     <string name="take_photo">Take Photo</string>
     <string name="send_to">Send To</string>
+
+    <!--Setting-->
+    <string name="small_font_size">Normal Size</string>
+    <string name="big_font_size">Big Size</string>
+
+    <!--Drawer-->
+    <string name="import_files">Import Files</string>
+    <string name="setting">Setting</string>
+    <string name="help">Help</string>
+    <string name="about">About</string>
+    <string name="exit_vault">Exit Vault</string>
 
 </resources>

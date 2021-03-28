@@ -1,13 +1,11 @@
 package com.katcom.androidFileVault;
 
-import android.app.ActivityManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -15,25 +13,30 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.solver.widgets.ConstraintAnchor;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.katcom.androidFileVault.SettingSection.SettingActivity;
 import com.katcom.androidFileVault.fileRecyclerView.FilePreviewAdapter;
 
 import java.io.File;
@@ -55,6 +58,10 @@ import java.util.concurrent.TimeUnit;
 
 import static android.app.Activity.RESULT_OK;
 
+/**
+ * This fragment is the main view of the vault, where user can select files, import and export files
+ * and go to the navigation bar.
+ */
 public class VaultFragment extends Fragment {
     private static final int REQUEST_FILE_CODE = 1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
@@ -74,11 +81,12 @@ public class VaultFragment extends Fragment {
     private List<ProtectedFile> mFiles;
     private Uri tempPictureUir;
     private PreviewManager previewManager;
-
+    private Button mImportButton;
+    private static String PREF_FONT_SIZE = "pref_fontSize";
+    private ProgressBar importProgressBar;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setHasOptionsMenu(true);
     }
 
     @Override
@@ -89,19 +97,20 @@ public class VaultFragment extends Fragment {
         mDrawer = view.findViewById(R.id.drawer_layout);
         mNavigation = view.findViewById(R.id.navigation_view);
 
+        // Set the navigation drawer
         mNavigation.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 int id = menuItem.getItemId();
                 switch (id){
-                    case R.id.action_import:
-                        showChooseFileActivity();
-                        break;
                     case R.id.action_help:
-                        //showHelpInfo();
+                        showHelpInfo();
                         break;
                     case R.id.action_about:
-                        //showEncryptTest();
+                        showAboutInfo();
+                        break;
+                    case R.id.action_settings:
+                        showSetting();
                         break;
                     case R.id.action_exit:
                         endApplication();
@@ -132,6 +141,16 @@ public class VaultFragment extends Fragment {
 
         updateUI();
 
+        // When import button is clicked, show the choose file activity
+        // where user selects the files to be imported
+        mImportButton = view.findViewById(R.id.button_import);
+        mImportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showChooseFileActivity();
+            }
+        });
+
         // Setup the zoom-in and zoom-out button
         mZoomInButton = view.findViewById(R.id.button_zoom_in);
         mZoomInButton.setOnClickListener(new View.OnClickListener() {
@@ -149,16 +168,30 @@ public class VaultFragment extends Fragment {
             }
         });
 
+        importProgressBar = view.findViewById(R.id.import_progressBar);
+        setFontSize();
 
 
         Log.i(TAG,"Create Vault View");
         return view;
     }
 
-    private void showEncryptTest() {
-        mVault.showEncryptTest();
+    private void setFontSize() {
+        SharedPreferences mSp = PreferenceManager.getDefaultSharedPreferences(getContext());
+        String fontSize = mSp.getString(PREF_FONT_SIZE, "normal");
+        if(fontSize.equals("normal")){
+            mNavigation.setItemTextAppearance(R.style.DrawerTextStyle_Normal);
+            mImportButton.setTextSize(TypedValue.COMPLEX_UNIT_SP,14);
+        } else{
+            mNavigation.setItemTextAppearance(R.style.DrawerTextStyle_Big);
+            mImportButton.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+        }
+
     }
 
+    /**
+     * Show the interface where user chooses files to import
+     */
     private void showChooseFileActivity() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -302,6 +335,7 @@ public class VaultFragment extends Fragment {
         }
     }
 
+    // This method save the media store location of the picture that user has taken
     private void saveTempPictureUri(Uri uri) {
         this.tempPictureUir = uri;
     }
@@ -344,7 +378,7 @@ public class VaultFragment extends Fragment {
      */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.export_menu, menu);
+        inflater.inflate(R.menu.vault_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -356,9 +390,6 @@ public class VaultFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_export_selected_files:
-                //exportMultipleFiles();
-                break;
             case R.id.menu_take_photo:
                 takePhoto();
                 break;
@@ -401,26 +432,21 @@ public class VaultFragment extends Fragment {
     private void fetchPictureAndImport(@Nullable Intent data) {
         Uri picUri;
 
+        // Get the uri to the picture
         if (data == null) {
             picUri = getTempPicUri();
-        } else
-        {
+        } else {
             Bundle extras = data.getExtras();
             picUri = (Uri) extras.get (MediaStore.EXTRA_OUTPUT);
         }
 
-        //Bundle extras = data.getExtras();
-        //Bitmap image = (Bitmap)extras.get("data");
-        //Uri picUri = (Uri) extras.get(MediaStore.EXTRA_OUTPUT);
-
         try {
-            //saveImage(image);
             InputStream in = getActivity().getContentResolver().openInputStream(picUri);
             File photoFile = createImageFile();
-            //mVault.importFile(photoFile,in);
             new ImportTask(photoFile,in).execute();
 
-            //updateUI();
+            // Show progress bar
+            importProgressBar.setVisibility(View.VISIBLE);
         } catch (IOException e) {
             Log.e(TAG,e.toString());
         }
@@ -472,9 +498,13 @@ public class VaultFragment extends Fragment {
                 // Import it to the vault at the specified location
                 //mVault.importFile(targetFile,contentResolver.openInputStream(uri));
                 Executor executor = Executors.newSingleThreadExecutor();
+
                 new ImportTask(targetFile,contentResolver.openInputStream(uri)).executeOnExecutor(executor);
                 // Show a message to inform user about the file
                 Toast.makeText(getContext(),"Select file: "+filename,Toast.LENGTH_LONG).show();
+
+                // Show progress bar
+                importProgressBar.setVisibility(View.VISIBLE);
 
                 //get last file
                 //ProtectedFile file = mFiles.get(mFiles.size()-1);
@@ -492,9 +522,6 @@ public class VaultFragment extends Fragment {
         return getActivity().getFilesDir() +"/" +mVault.getVaultDirectory();
     }
 
-    protected void showHelpInfo(){
-        boolean has = mVault.hasPrivateKey();
-    }
 
     // Send a broadcast to close all activities
     private void endApplication(){
@@ -565,8 +592,8 @@ public class VaultFragment extends Fragment {
             updateUI();
             ProtectedFile protectedFile = mFiles.get(mFiles.size()-1);
             //Bitmap preview = mVault.getPreview(file,120,120);
-
             new FetchSinglePreviewImage().execute(protectedFile);
+            importProgressBar.setVisibility(View.GONE);
         }
     }
 
@@ -589,7 +616,21 @@ public class VaultFragment extends Fragment {
         return image;
     }
 
+    /*********Navigation methods*********/
+    private void showSetting() {
+        Intent i  = new Intent(this.getContext(), SettingActivity.class);
+        startActivity(i);
+    }
 
+    private void showAboutInfo() {
+        Intent i  = new Intent(this.getContext(), AboutActivity.class);
+        startActivity(i);
+    }
+
+    protected void showHelpInfo(){
+        Intent i  = new Intent(this.getContext(), HelpActivity.class);
+        startActivity(i);
+    }
 
 
 }

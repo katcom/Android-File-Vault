@@ -85,7 +85,7 @@ public class ImageViewerFragment extends Fragment {
         super.onOptionsItemSelected(item);
         switch (item.getItemId()) {
             case R.id.menu_image_viewer_export:
-                export();
+                showFileExplorerForExport();
                 break;
             case R.id.menu_image_viewer_share:
                 share();
@@ -94,7 +94,7 @@ public class ImageViewerFragment extends Fragment {
         return true;
     }
 
-    private void export() {
+    private void showFileExplorerForExport() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("image/*");

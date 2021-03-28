@@ -11,4 +11,11 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <!-- Navigation font size-->
+    <style name="DrawerTextStyle_Normal" >
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="DrawerTextStyle_Big" >
+        <item name="android:textSize">25sp</item>
+    </style>
 </resources>

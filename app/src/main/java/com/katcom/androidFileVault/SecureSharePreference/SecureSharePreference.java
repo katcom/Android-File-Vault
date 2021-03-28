@@ -1,5 +1,5 @@
 /**
- * The SecureSharePreference is an costumed extension of SharePreference, a light-weight database provided by Android.
+ * The SecureSharePreference is a custom extension of SharePreference, a light-weight database provided by Android.
  * SecureSharePreference would encrypt the records before storing it in the database file,
  * Instead of storing the plain text.
  *
